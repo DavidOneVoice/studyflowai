@@ -1,0 +1,477 @@
+.pmShell {
+  margin-top: 18px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.pmTop {
+  padding: 14px 14px 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  background:
+    radial-gradient(
+      900px 420px at 12% 0%,
+      rgba(63, 61, 255, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 420px at 88% 10%,
+      rgba(0, 194, 168, 0.12),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.03);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pmTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pmTitle {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pmBadge {
+  font-size: 12px;
+  font-weight: 900;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.pmMeta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+}
+
+.pmMetaItem strong {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pmDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0.95;
+}
+
+.pmTopRight {
+  min-width: 180px;
+}
+
+.pmProgressWrap {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+}
+
+.pmProgressTrack {
+  width: 180px;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pmProgressFill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 220ms ease;
+}
+
+.pmProgressText {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.pmBody {
+  padding: 16px 14px 16px;
+}
+
+.pmQuestion {
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pmQLabel {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.25px;
+  color: rgba(255, 255, 255, 0.68);
+  margin-bottom: 8px;
+}
+
+.pmPrompt {
+  white-space: pre-line;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pmOptions {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.pmOption {
+  width: 100%;
+  text-align: left;
+
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  padding: 12px 12px;
+  border-radius: 16px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.9);
+
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.pmOption:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.pmOption:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.pmOption:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.pmRadio {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  margin-top: 3px;
+
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  flex: 0 0 14px;
+}
+
+.pmOptionText {
+  line-height: 1.5;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+}
+
+.pmOption.selected {
+  border-color: rgba(63, 61, 255, 0.34);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.16),
+    rgba(0, 194, 168, 0.1)
+  );
+  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.14);
+}
+
+.pmOption.selected .pmRadio {
+  border-color: rgba(255, 255, 255, 0.65);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  box-shadow: 0 12px 22px rgba(63, 61, 255, 0.18);
+}
+
+.pmActions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pmPrimary,
+.pmGhost {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.pmPrimary {
+  border: 1px solid rgba(63, 61, 255, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.22),
+    rgba(0, 194, 168, 0.12)
+  );
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pmPrimary:hover {
+  transform: translateY(-1px);
+  border-color: rgba(63, 61, 255, 0.42);
+  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+}
+
+.pmPrimary:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.pmPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.pmGhost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pmGhost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.pmGhost:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.pmPrimary:focus-visible,
+.pmGhost:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* Results */
+.pmScoreCard {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(
+      700px 320px at 12% 0%,
+      rgba(63, 61, 255, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      700px 320px at 88% 10%,
+      rgba(0, 194, 168, 0.12),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.04);
+}
+
+.pmScoreTitle {
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  letter-spacing: 0.25px;
+}
+
+.pmScoreValue {
+  margin-top: 6px;
+  font-weight: 1000;
+  font-size: 32px;
+  letter-spacing: -0.8px;
+}
+
+.pmScoreTotal {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 900;
+}
+
+.pmScoreSub {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 52ch;
+}
+
+.pmScoreBadge {
+  align-self: center;
+  text-align: center;
+
+  min-width: 120px;
+  padding: 12px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.pmScorePct {
+  font-weight: 1000;
+  font-size: 22px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pmScoreBadgeText {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pmReview {
+  margin-top: 14px;
+}
+
+.pmReviewTitle {
+  margin: 0 0 10px;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+.pmReviewGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.pmReviewCard {
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pmReviewCard.ok {
+  border-color: rgba(0, 194, 168, 0.2);
+  background: rgba(0, 194, 168, 0.06);
+}
+
+.pmReviewCard.bad {
+  border-color: rgba(255, 80, 80, 0.22);
+  background: rgba(255, 80, 80, 0.06);
+}
+
+.pmReviewQ {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.pmReviewNum {
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 1000;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.86);
+  flex: 0 0 26px;
+}
+
+.pmReviewPrompt {
+  font-weight: 900;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pmReviewAns {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.pmReviewLabel {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.pmReviewValue {
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.pmReviewValue.strong {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pmMark {
+  margin-left: 6px;
+}
+
+.pmExplain {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pmExplainText {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+  .pmProgressTrack {
+    width: 140px;
+  }
+  .pmPrimary,
+  .pmGhost {
+    width: 100%;
+  }
+}

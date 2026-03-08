@@ -1,0 +1,126 @@
+/* Reusable UI helpers for all pages */
+
+/* Headings */
+.h1 {
+  font-size: clamp(24px, 3vw, 40px);
+  letter-spacing: -0.8px;
+  margin: 0 0 10px;
+}
+.h2 {
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  margin: 0 0 8px;
+}
+.p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* Buttons */
+.btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+.btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0) scale(0.99);
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.btnPrimary {
+  border-color: rgba(63, 61, 255, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.22),
+    rgba(0, 194, 168, 0.12)
+  );
+}
+.btnPrimary:hover {
+  border-color: rgba(63, 61, 255, 0.38);
+}
+
+.btnAccent {
+  border-color: rgba(0, 194, 168, 0.28);
+  background: rgba(0, 194, 168, 0.12);
+}
+.btnAccent:hover {
+  border-color: rgba(0, 194, 168, 0.38);
+}
+
+/* Inputs */
+.input,
+.textarea,
+.select {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  border-radius: 14px;
+  outline: none;
+  transition:
+    box-shadow 160ms ease,
+    border 160ms ease,
+    background 160ms ease;
+}
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: rgba(63, 61, 255, 0.35);
+  box-shadow: var(--focus);
+  background: rgba(255, 255, 255, 0.055);
+}
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Layout blocks */
+.stack {
+  display: grid;
+  gap: 12px;
+}
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Tables / lists */
+.hr {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0;
+  margin: 14px 0;
+}

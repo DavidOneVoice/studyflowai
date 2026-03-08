@@ -1,0 +1,459 @@
+.schPage {
+  animation: pageIn 420ms ease both;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.schCard {
+  padding: 18px;
+  background:
+    radial-gradient(
+      900px 420px at 12% 0%,
+      rgba(63, 61, 255, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      820px 380px at 88% 10%,
+      rgba(0, 194, 168, 0.12),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.03);
+}
+
+.schHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.schBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.25px;
+
+  border: 1px solid rgba(0, 194, 168, 0.24);
+  background: rgba(0, 194, 168, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.schTitle {
+  margin: 10px 0 8px;
+  font-size: clamp(20px, 2.3vw, 28px);
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.schSub {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 85ch;
+}
+
+.schHeaderActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.schPrimary,
+.schGhost {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    opacity 160ms ease;
+}
+
+.schPrimary:disabled,
+.schGhost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.schPrimary {
+  border: 1px solid rgba(63, 61, 255, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.22),
+    rgba(0, 194, 168, 0.12)
+  );
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.schPrimary:hover {
+  transform: translateY(-1px);
+  border-color: rgba(63, 61, 255, 0.42);
+  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+}
+
+.schPrimary:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.schGhost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.schGhost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.schGhost:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.schPrimary:focus-visible,
+.schGhost:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* Toolbar */
+.schToolbar {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.schFilter {
+  min-width: 260px;
+}
+
+.schTools {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.schToolRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.schCopied {
+  font-weight: 1000;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.schCount {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  text-align: right;
+}
+
+.schCount strong {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Table */
+.schTableWrap {
+  margin-top: 14px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.schTable .row.schedule > div {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.schFoot {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Empty state */
+.schEmpty {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  margin-top: 12px;
+}
+
+.schEmptyIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(0, 194, 168, 0.55),
+    rgba(63, 61, 255, 0.18)
+  );
+  box-shadow: 0 14px 28px rgba(0, 194, 168, 0.1);
+}
+
+.schEmptyTitle {
+  font-weight: 1000;
+}
+
+.schEmptySub {
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.schCTA {
+  margin-top: 10px;
+}
+
+@media (max-width: 720px) {
+  .schTools {
+    justify-items: stretch;
+    width: 100%;
+  }
+
+  .schToolRow {
+    justify-content: stretch;
+  }
+
+  .schGhost {
+    width: 100%;
+  }
+
+  .schHeaderActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .schHeaderActions .schGhost {
+    width: 100%;
+  }
+}
+/* ---------- Filter field ---------- */
+.schFilter label {
+  display: block;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.25px;
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: 6px;
+}
+
+.schFilter select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+
+  outline: none;
+  appearance: none;
+  padding-right: 24px;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.65) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+
+  transition:
+    border 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.schFilter select:focus {
+  border-color: rgba(63, 61, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(63, 61, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.schFilter select option {
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+}
+/* ---------- Table alignment (Schedule) ---------- */
+.schTable .row.schedule {
+  display: grid;
+  grid-template-columns: 150px 190px minmax(280px, 1.4fr) 140px;
+  gap: 12px;
+  align-items: center;
+}
+
+.schTable .row.head.schedule {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  padding: 12px 12px;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.25px;
+
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.schTable .row.schedule:not(.head) {
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.schTable .row.schedule:not(.head):hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Keep course readable without breaking layout */
+.schTable .row.schedule > div:nth-child(3) {
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.92);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Type as a pill */
+.schTable .row.schedule > div:nth-child(4) {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(0, 194, 168, 0.18);
+  background: rgba(0, 194, 168, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Mobile stacking */
+@media (max-width: 880px) {
+  .schTable .row.schedule {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "course course"
+      "date time"
+      "type type";
+  }
+
+  .schTable .row.schedule > div:nth-child(1) {
+    grid-area: date;
+  }
+  .schTable .row.schedule > div:nth-child(2) {
+    grid-area: time;
+  }
+  .schTable .row.schedule > div:nth-child(3) {
+    grid-area: course;
+    white-space: normal;
+  }
+  .schTable .row.schedule > div:nth-child(4) {
+    grid-area: type;
+  }
+}
+/* ---------- Today / Past highlight ---------- */
+.schTable .row.schedule.isToday {
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.14),
+    rgba(0, 194, 168, 0.08)
+  );
+  border-bottom-color: rgba(63, 61, 255, 0.18);
+}
+
+.schTable .row.schedule.isToday:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.18),
+    rgba(0, 194, 168, 0.1)
+  );
+}
+
+.schTable .row.schedule.isToday > div:nth-child(1)::before {
+  content: "Today";
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  margin-right: 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: 0.2px;
+
+  border: 1px solid rgba(63, 61, 255, 0.35);
+  background: rgba(63, 61, 255, 0.18);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Past sessions look faded */
+.schTable .row.schedule.isPast {
+  opacity: 0.72;
+}
+
+.schTable .row.schedule.isPast:hover {
+  opacity: 0.9;
+}
+@media screen and (max-width: 400px) {
+  .schFilter select {
+    width: 90%;
+  }
+}

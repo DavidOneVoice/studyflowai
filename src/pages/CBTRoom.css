@@ -1,0 +1,177 @@
+.cbtPage {
+  animation: pageIn 420ms ease both;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Loading state card */
+.cbtShell {
+  padding: 16px;
+}
+
+.cbtHeaderOnly {
+  margin-bottom: 12px;
+}
+
+.cbtTitle {
+  margin: 0 0 8px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+.cbtMuted {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.cbtBack {
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.cbtBack:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.cbtBack:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.cbtBack:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* Sticky exam HUD */
+.cbtHud {
+  position: sticky;
+  top: 64px; /* below navbar */
+  z-index: 40;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  padding: 14px 14px;
+  margin-bottom: 14px;
+
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 48, 0.82) 0%,
+    rgba(11, 16, 32, 0.58) 100%
+  );
+
+  box-shadow: var(--shadow-soft);
+}
+
+.cbtHudLeft {
+  min-width: 240px;
+}
+
+.cbtBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.25px;
+
+  border: 1px solid rgba(63, 61, 255, 0.26);
+  background: rgba(63, 61, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cbtSetTitle {
+  margin-top: 8px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+  font-size: 16px;
+}
+
+.cbtMeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.cbtMetaItem {
+  font-weight: 800;
+}
+
+.cbtMetaDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  opacity: 0.95;
+}
+
+.cbtHudRight {
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+}
+
+.cbtError {
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 80, 80, 0.28);
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+.cbtHint {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Small screens: keep HUD readable */
+@media (max-width: 520px) {
+  .cbtHud {
+    top: 58px;
+  }
+}

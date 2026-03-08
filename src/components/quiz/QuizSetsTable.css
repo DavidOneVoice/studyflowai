@@ -1,0 +1,191 @@
+.qstCard {
+  margin-top: 14px;
+  padding: 16px 16px 14px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow: var(--shadow-soft);
+}
+
+.qstTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.qstTitle {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.qstCount {
+  font-weight: 900;
+  font-size: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.qstTable {
+  display: grid;
+  gap: 10px;
+}
+
+.qstRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease;
+}
+
+.qstRow:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.qstHead {
+  background: rgba(255, 255, 255, 0.03);
+  border-style: dashed;
+}
+
+.qstHead:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qstName {
+  font-weight: 900;
+  letter-spacing: 0.1px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.qstActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.qstOpen,
+.qstRemove {
+  border-radius: 14px;
+  padding: 9px 12px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border 160ms ease;
+}
+
+.qstOpen {
+  border: 1px solid rgba(63, 61, 255, 0.28);
+  background: rgba(63, 61, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+}
+.qstOpen:hover {
+  transform: translateY(-1px);
+  border-color: rgba(63, 61, 255, 0.42);
+  box-shadow: 0 14px 26px rgba(63, 61, 255, 0.12);
+}
+.qstOpen:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qstRemove {
+  border: 1px solid rgba(255, 80, 80, 0.28);
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+}
+.qstRemove:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 80, 80, 0.4);
+}
+.qstRemove:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qstOpen:focus-visible,
+.qstRemove:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.qstFooter {
+  margin: 12px 0 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Empty state */
+.qstEmpty {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qstEmptyIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(63, 61, 255, 0.55),
+    rgba(0, 194, 168, 0.18)
+  );
+  box-shadow: 0 14px 28px rgba(63, 61, 255, 0.12);
+}
+
+.qstEmptyTitle {
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.qstEmptySub {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .qstRow {
+    grid-template-columns: 1fr;
+  }
+  .qstActions {
+    justify-content: flex-start;
+  }
+  .qstOpen,
+  .qstRemove {
+    width: 100%;
+  }
+}

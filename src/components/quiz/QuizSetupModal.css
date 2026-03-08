@@ -1,0 +1,367 @@
+.qsmOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  margin-top: 10rem;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: qsmFade 180ms ease both;
+}
+
+@keyframes qsmFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media screen and (max-width: 650px) {
+  .qsmOverlay {
+    margin-top: 0rem;
+  }
+}
+
+.qsmCard {
+  width: min(620px, 100%);
+  border-radius: 22px;
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(
+      900px 520px at 15% 0%,
+      rgba(63, 61, 255, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 520px at 85% 20%,
+      rgba(0, 194, 168, 0.12),
+      transparent 60%
+    ),
+    rgba(15, 23, 48, 0.94);
+
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+  transform-origin: center;
+  animation: qsmPop 220ms ease both;
+  margin-top: 5rem;
+}
+
+@keyframes qsmPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.qsmHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qsmTitle {
+  font-weight: 1000;
+  font-size: 18px;
+  letter-spacing: -0.4px;
+}
+
+.qsmSetTitle {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.qsmSetPill {
+  font-weight: 1000;
+  font-size: 11px;
+  letter-spacing: 0.25px;
+
+  padding: 6px 9px;
+  border-radius: 999px;
+
+  border: 1px solid rgba(0, 194, 168, 0.22);
+  background: rgba(0, 194, 168, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.qsmClose {
+  border-radius: 14px;
+  padding: 9px 12px;
+  font-weight: 1000;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.qsmClose:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.qsmClose:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qsmClose:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.qsmBody {
+  padding: 14px 16px 8px;
+  display: grid;
+  gap: 12px;
+}
+
+.qsmSection {
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qsmLabelRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.qsmLabel {
+  font-weight: 1000;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.qsmMiniHint {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.qsmSelect {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  outline: none;
+  transition:
+    box-shadow 160ms ease,
+    border 160ms ease,
+    background 160ms ease;
+}
+
+.qsmSelect option {
+  background: rgba(15, 23, 48, 0.94);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.qsmSelect:focus {
+  border-color: rgba(63, 61, 255, 0.38);
+  box-shadow: var(--focus);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.qsmNote {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.qsmTimeModes {
+  display: grid;
+  gap: 10px;
+}
+
+.qsmMode {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+
+  padding: 12px 12px;
+  border-radius: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.qsmMode:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.qsmMode.active {
+  border-color: rgba(63, 61, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.16),
+    rgba(0, 194, 168, 0.1)
+  );
+  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.12);
+}
+
+.qsmRadio {
+  margin-top: 4px;
+}
+
+.qsmModeText {
+  display: grid;
+  gap: 4px;
+}
+
+.qsmModeTitle {
+  font-weight: 1000;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -0.2px;
+}
+
+.qsmStrong {
+  margin-left: 8px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.qsmModeSub {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.qsmCustomRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 10px 12px;
+
+  border-radius: 18px;
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.qsmNumber {
+  width: 160px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  outline: none;
+  transition:
+    box-shadow 160ms ease,
+    border 160ms ease,
+    background 160ms ease;
+}
+
+.qsmNumber:focus {
+  border-color: rgba(63, 61, 255, 0.38);
+  box-shadow: var(--focus);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.qsmUnit {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.qsmActions {
+  padding: 14px 16px 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qsmBtn {
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 1000;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.qsmBtn:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.qsmBtn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qsmBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.qsmPrimary {
+  border-color: rgba(63, 61, 255, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.22),
+    rgba(0, 194, 168, 0.12)
+  );
+}
+
+.qsmTip {
+  padding: 0 16px 14px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+}

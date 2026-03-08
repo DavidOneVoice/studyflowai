@@ -1,0 +1,332 @@
+.pscCard {
+  padding: 16px;
+  background:
+    radial-gradient(
+      900px 420px at 12% 0%,
+      rgba(63, 61, 255, 0.12),
+      transparent 55%
+    ),
+    radial-gradient(
+      820px 380px at 88% 10%,
+      rgba(0, 194, 168, 0.1),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.03);
+}
+
+.pscHeader {
+  margin-bottom: 10px;
+}
+
+.pscBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 1000;
+  font-size: 12px;
+  letter-spacing: 0.25px;
+
+  border: 1px solid rgba(63, 61, 255, 0.26);
+  background: rgba(63, 61, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pscBadge2 {
+  border-color: rgba(0, 194, 168, 0.22);
+  background: rgba(0, 194, 168, 0.1);
+}
+
+.pscTitle {
+  margin: 10px 0 6px;
+  font-weight: 1000;
+  letter-spacing: -0.4px;
+}
+
+.pscSub {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 85ch;
+}
+
+.pscHint {
+  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.pscFormGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+.pscCTA {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pscDivider {
+  height: 1px;
+  margin: 16px 0;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pscAvailability {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.pscDays {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pscChip {
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-weight: 1000;
+  font-size: 12px;
+  letter-spacing: 0.25px;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.86);
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.pscChip:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.pscChip:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.pscChip.active {
+  border-color: rgba(63, 61, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.16),
+    rgba(0, 194, 168, 0.1)
+  );
+  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.12);
+}
+
+.pscTimeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.pscNote {
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.pscError {
+  margin-top: 12px;
+}
+
+@media (max-width: 980px) {
+  .pscFormGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pscCTA {
+    justify-content: stretch;
+  }
+
+  .pscCTA .primaryBtn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .pscFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pscTimeGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Form controls (PlannerSetupCard only) ---------- */
+.pscCard .field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.25px;
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: 6px;
+}
+
+.pscCard .field input,
+.pscCard .field select,
+.pscCard .field textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+
+  outline: none;
+  transition:
+    border 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.pscCard .field input::placeholder,
+.pscCard .field textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.pscCard .field input:focus,
+.pscCard .field select:focus,
+.pscCard .field textarea:focus {
+  border-color: rgba(63, 61, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(63, 61, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pscCard .field input:disabled,
+.pscCard .field select:disabled,
+.pscCard .field textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pscCard .field select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.65) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+/* Make DatePicker input match */
+.pscCard .input {
+  width: 100%;
+}
+
+/* ---------- React DatePicker premium overrides ---------- */
+.react-datepicker {
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(18, 18, 24, 0.98) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45) !important;
+}
+
+.react-datepicker__header {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 900 !important;
+}
+
+.react-datepicker__day-name,
+.react-datepicker__day,
+.react-datepicker__time-name {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.react-datepicker__day:hover {
+  background: rgba(63, 61, 255, 0.18) !important;
+  border-radius: 10px !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.9),
+    rgba(0, 194, 168, 0.75)
+  ) !important;
+  border-radius: 10px !important;
+  color: white !important;
+}
+
+.react-datepicker__triangle {
+  display: none !important;
+}
+
+/* ---------- Button alignment polish ---------- */
+.pscCTA .primaryBtn {
+  min-height: 44px;
+  border-radius: 14px;
+}
+/* Keep the SELECT looking like the rest of your dark inputs */
+.pscCard .field select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+
+  outline: none;
+  padding-right: 34px;
+  appearance: none;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.65) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+
+/* Try to force dropdown options to be readable */
+.pscCard .field select option {
+  background: #ffffff;
+  color: #000000;
+}

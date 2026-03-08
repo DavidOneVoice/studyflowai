@@ -1,0 +1,158 @@
+.qsPage {
+  animation: pageIn 420ms ease both;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.qsHeader {
+  padding: 18px;
+  background:
+    radial-gradient(
+      900px 420px at 12% 0%,
+      rgba(63, 61, 255, 0.2),
+      transparent 55%
+    ),
+    radial-gradient(
+      820px 400px at 88% 10%,
+      rgba(0, 194, 168, 0.14),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.03);
+}
+
+.qsHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.qsTitleBlock {
+  min-width: 240px;
+}
+
+.qsTitle {
+  margin: 0 0 8px;
+  font-size: clamp(20px, 2.3vw, 28px);
+  letter-spacing: -0.5px;
+}
+
+.qsSub {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 80ch;
+}
+
+.qsActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.qsPrimary,
+.qsGhost {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border 160ms ease;
+}
+
+.qsPrimary {
+  border: 1px solid rgba(63, 61, 255, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.22),
+    rgba(0, 194, 168, 0.12)
+  );
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.qsPrimary:hover {
+  transform: translateY(-1px);
+  border-color: rgba(63, 61, 255, 0.42);
+  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+}
+
+.qsPrimary:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qsGhost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.qsGhost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.qsGhost:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qsPrimary:focus-visible,
+.qsGhost:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.qsHintRow {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qsPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.qsPillAlt {
+  border-color: rgba(0, 194, 168, 0.22);
+  background: rgba(0, 194, 168, 0.1);
+}
+
+@media (max-width: 640px) {
+  .qsActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .qsPrimary,
+  .qsGhost {
+    width: 100%;
+  }
+}

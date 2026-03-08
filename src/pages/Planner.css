@@ -1,0 +1,202 @@
+.plPage {
+  animation: pageIn 420ms ease both;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.plCard {
+  padding: 18px;
+  background:
+    radial-gradient(
+      900px 420px at 12% 0%,
+      rgba(63, 61, 255, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      820px 380px at 88% 10%,
+      rgba(0, 194, 168, 0.12),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.03);
+}
+
+.plHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.plBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.25px;
+
+  border: 1px solid rgba(63, 61, 255, 0.26);
+  background: rgba(63, 61, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.plTitle {
+  margin: 10px 0 8px;
+  font-size: clamp(20px, 2.3vw, 28px);
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.plSub {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 85ch;
+}
+
+.plHeaderActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Buttons */
+.plGhost {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    opacity 160ms ease;
+}
+
+.plGhost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.plGhost:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.plGhost:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* Tabs card */
+.plTabsCard {
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  margin-bottom: 14px;
+}
+
+.plTabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.plTab {
+  border-radius: 14px;
+  padding: 11px 14px;
+  font-weight: 1000;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.88);
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border 160ms ease;
+}
+
+.plTab:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.plTab:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.plTab.active {
+  border-color: rgba(63, 61, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.16),
+    rgba(0, 194, 168, 0.1)
+  );
+  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.12);
+}
+
+.plTab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.plBody {
+  display: grid;
+  gap: 14px;
+}
+
+/* Toast (replaces alert) */
+.plToast {
+  margin: 10px 0 14px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 194, 168, 0.22);
+  background: rgba(0, 194, 168, 0.1);
+  font-weight: 1000;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+@media (max-width: 720px) {
+  .plHeaderActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .plGhost {
+    width: 100%;
+  }
+
+  .plTab {
+    width: 100%;
+  }
+}

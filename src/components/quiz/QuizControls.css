@@ -1,0 +1,160 @@
+.qcWrapper {
+  margin-bottom: 14px;
+}
+
+.qcCard {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  padding: 14px;
+  border-radius: 18px;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(
+      600px 300px at 15% 0%,
+      rgba(63, 61, 255, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      600px 300px at 85% 10%,
+      rgba(0, 194, 168, 0.1),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.04);
+}
+
+.qcSection {
+  display: grid;
+  gap: 8px;
+  min-width: 200px;
+  flex: 1;
+}
+
+.qcLabel {
+  font-weight: 1000;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Select */
+.qcSelect {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  outline: none;
+
+  transition:
+    border 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.qcSelect:focus {
+  border-color: rgba(63, 61, 255, 0.4);
+  box-shadow: var(--focus);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Timer block */
+.qcTimerBlock {
+  display: grid;
+  gap: 10px;
+}
+
+/* Toggle */
+.qcToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.qcToggle input {
+  display: none;
+}
+
+.qcToggleSlider {
+  width: 42px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  position: relative;
+  transition: background 200ms ease;
+}
+
+.qcToggleSlider::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 200ms ease;
+}
+
+.qcToggle input:checked + .qcToggleSlider {
+  background: linear-gradient(
+    90deg,
+    rgba(63, 61, 255, 0.8),
+    rgba(0, 194, 168, 0.8)
+  );
+}
+
+.qcToggle input:checked + .qcToggleSlider::after {
+  transform: translateX(20px);
+}
+
+.qcToggleText {
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Custom time */
+.qcCustomTime {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qcNumber {
+  width: 90px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 9px 10px;
+  outline: none;
+
+  transition:
+    border 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.qcNumber:focus {
+  border-color: rgba(63, 61, 255, 0.4);
+  box-shadow: var(--focus);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.qcUnit {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  .qcCard {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,365 @@
+.qbCard {
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.qbHeader {
+  padding: 18px 18px 12px;
+  position: relative;
+  background:
+    radial-gradient(
+      900px 420px at 10% 0%,
+      rgba(63, 61, 255, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(
+      800px 380px at 90% 10%,
+      rgba(0, 194, 168, 0.16),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qbHeaderTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.qbBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.25px;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(63, 61, 255, 0.26);
+  background: rgba(63, 61, 255, 0.14);
+}
+
+.qbBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.qbChip {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.qbTitle {
+  margin: 12px 0 8px;
+  font-size: clamp(20px, 2.2vw, 28px);
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.qbSub {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14px;
+  max-width: 80ch;
+}
+
+.qbBody {
+  padding: 16px 18px 18px;
+}
+
+.qbGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.qbField {
+  display: grid;
+  gap: 8px;
+}
+
+.qbLabel {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.86);
+  margin-top: 2rem;
+}
+
+.qbInput,
+.qbSelect,
+.qbTextarea {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 10px 12px;
+  outline: none;
+  transition:
+    box-shadow 160ms ease,
+    border 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.qbTextarea {
+  min-height: 190px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.qbInput:focus,
+.qbSelect:focus,
+.qbTextarea:focus {
+  border-color: rgba(63, 61, 255, 0.38);
+  box-shadow: var(--focus);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.qbInput::placeholder,
+.qbTextarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.qbSelect option {
+  color: black;
+}
+
+.qbHelp {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ---------- Premium Upload Dropzone ---------- */
+.qbUpload {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  width: 100%;
+  min-height: 170px;
+  padding: 26px;
+
+  border-radius: 22px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+
+  background:
+    radial-gradient(
+      800px 300px at 10% 0%,
+      rgba(63, 61, 255, 0.18),
+      transparent 60%
+    ),
+    radial-gradient(
+      800px 300px at 90% 100%,
+      rgba(0, 194, 168, 0.15),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.04);
+
+  backdrop-filter: blur(18px);
+
+  cursor: pointer;
+
+  transition:
+    border 240ms ease,
+    background 240ms ease,
+    transform 200ms ease,
+    box-shadow 240ms ease;
+}
+
+.qbUpload:hover {
+  transform: translateY(-3px);
+  border-color: rgba(63, 61, 255, 0.45);
+  box-shadow: 0 25px 50px rgba(63, 61, 255, 0.18);
+}
+
+.qbUpload.dragging {
+  border-color: rgba(0, 194, 168, 0.65);
+  background:
+    radial-gradient(
+      800px 300px at 10% 0%,
+      rgba(63, 61, 255, 0.28),
+      transparent 60%
+    ),
+    radial-gradient(
+      800px 300px at 90% 100%,
+      rgba(0, 194, 168, 0.25),
+      transparent 60%
+    ),
+    rgba(255, 255, 255, 0.06);
+  box-shadow: 0 30px 60px rgba(0, 194, 168, 0.22);
+}
+
+.qbFile {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Icon */
+.qbUploadIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.85),
+    rgba(0, 194, 168, 0.85)
+  );
+  box-shadow: 0 20px 40px rgba(63, 61, 255, 0.25);
+  position: relative;
+}
+
+.qbUploadIcon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  border-left: 3px solid white;
+  border-bottom: 3px solid white;
+  transform: rotate(45deg) translateY(-2px);
+}
+
+.qbUploadHint {
+  margin: 0;
+  text-align: center;
+  display: grid;
+  gap: 4px;
+}
+
+.qbUploadTitle {
+  font-weight: 1000;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.qbUploadSub {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.qbFileInfo {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 194, 168, 0.2);
+  background: rgba(0, 194, 168, 0.1);
+}
+
+.qbFileTag {
+  font-weight: 900;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 194, 168, 0.24);
+  background: rgba(0, 194, 168, 0.1);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.qbFileName {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+}
+
+.qbCounter {
+  margin-top: -2px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+  text-align: right;
+}
+
+.qbError {
+  margin-top: 12px;
+  padding: 12px 12px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 80, 80, 0.28);
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.qbActions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.qbPrimary {
+  border: 1px solid rgba(63, 61, 255, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(63, 61, 255, 0.22),
+    rgba(0, 194, 168, 0.12)
+  );
+  color: rgba(255, 255, 255, 0.92);
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    border 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.qbPrimary:hover {
+  transform: translateY(-1px);
+  border-color: rgba(63, 61, 255, 0.4);
+  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+}
+
+.qbPrimary:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.qbPrimary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus2);
+}
+
+@media (max-width: 920px) {
+  .qbGrid {
+    grid-template-columns: 1fr;
+  }
+}
