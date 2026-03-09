@@ -129,8 +129,8 @@ export default function App() {
             type="button"
           >
             <img
-              src="/og-image-1200x630.png.png"
-              alt="CramLess logo"
+              src="/logo.png"
+              alt="StudyFlow AI logo"
               className="brandIcon"
             />
             <span className="brandText">
