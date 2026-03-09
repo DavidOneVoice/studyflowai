@@ -128,10 +128,14 @@ export default function App() {
             aria-label="Go to Home"
             type="button"
           >
-            <img src="/logo.png" alt="CramLess logo" className="brandIcon" />
+            <img
+              src="/og-image-1200x630.png.png"
+              alt="CramLess logo"
+              className="brandIcon"
+            />
             <span className="brandText">
-              <span className="brandCram">Cram</span>
-              <span className="brandLess">Less</span>
+              <span className="brandCram">StudyFlow</span>
+              <span className="brandLess">AI</span>
             </span>
           </button>
 
