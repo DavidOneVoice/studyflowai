@@ -531,3 +531,16 @@
     opacity: 0.22;
   }
 }
+.cbtLoading {
+  margin: 20px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.08),
+    rgba(6, 182, 212, 0.08)
+  );
+  font-weight: 700;
+  color: var(--text);
+}

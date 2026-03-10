@@ -258,9 +258,16 @@ export default function CBTRoom() {
     const count = getIntParam("count", 10);
     const durationMins = getIntParam("mins", count);
 
+    setGenerating(true);
+    setError("Generating new practice questions…");
+
     const questions = await generateWithAI(activeSetId, count);
+
+    setGenerating(false);
+
     if (!questions || questions.length !== count) return;
 
+    setError("");
     start(durationMins * 60);
     startPractice(activeSetId);
   }
@@ -341,7 +348,12 @@ export default function CBTRoom() {
         </div>
       </section>
 
+      {generating && (
+        <div className="cbtLoading">Generating new questions…</div>
+      )}
+
       <PracticeMode
+        generating={generating}
         activeSet={activeSet}
         currentIndex={currentIndex}
         selectedAnswer={selectedAnswer}

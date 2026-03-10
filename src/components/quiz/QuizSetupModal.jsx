@@ -127,7 +127,7 @@ export default function QuizSetupModal({
                 <div className="qsmModeText">
                   <div className="qsmModeTitle">Custom duration</div>
                   <div className="qsmModeSub">
-                    Choose your own timer for serious practice
+                    Choose your own timer for practice sessions
                   </div>
                 </div>
               </label>
@@ -154,6 +154,7 @@ export default function QuizSetupModal({
             </p>
           </section>
         </div>
+
         <div className="qsmTip">
           Tip: If your file is short and the app cannot generate enough unique
           questions, reduce the number of questions and try again.
