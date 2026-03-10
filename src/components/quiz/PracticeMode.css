@@ -1,61 +1,57 @@
 .pmShell {
   margin-top: 18px;
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.03)
-  );
-  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
 .pmTop {
-  padding: 14px 14px 12px;
+  padding: 16px 16px 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
-
   background:
     radial-gradient(
-      900px 420px at 12% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      700px 260px at 12% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      900px 420px at 88% 10%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      700px 260px at 88% 10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(255, 255, 255, 0.03);
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  border-bottom: 1px solid var(--border);
 }
 
 .pmTitleRow {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .pmTitle {
   margin: 0;
-  font-size: 14px;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  letter-spacing: 0.12px;
+  color: var(--text);
+  font-weight: 800;
 }
 
 .pmBadge {
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 800;
   padding: 7px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(79, 70, 229, 0.14);
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-700);
 }
 
 .pmMeta {
@@ -64,12 +60,12 @@
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--muted);
   font-size: 12px;
 }
 
 .pmMetaItem strong {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
 }
 
 .pmDot {
@@ -77,7 +73,6 @@
   height: 5px;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--primary), var(--accent));
-  opacity: 0.95;
 }
 
 .pmTopRight {
@@ -95,73 +90,71 @@
   height: 10px;
   border-radius: 999px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  background: #eef2f7;
 }
 
 .pmProgressFill {
   height: 100%;
   width: 0%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--primary), var(--accent));
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
   transition: width 220ms ease;
 }
 
 .pmProgressText {
   font-size: 12px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.78);
+  font-weight: 800;
+  color: var(--text-soft);
 }
 
 .pmBody {
-  padding: 16px 14px 16px;
+  padding: 18px 16px;
 }
 
 .pmQuestion {
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  box-shadow: var(--shadow-soft);
 }
 
 .pmQLabel {
   font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 0.25px;
-  color: rgba(255, 255, 255, 0.68);
+  font-weight: 800;
+  letter-spacing: 0.18px;
+  color: var(--muted);
   margin-bottom: 8px;
 }
 
 .pmPrompt {
   white-space: pre-line;
-  font-weight: 900;
-  letter-spacing: -0.2px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+  letter-spacing: -0.15px;
+  line-height: 1.65;
+  color: var(--text);
 }
 
 .pmOptions {
-  margin-top: 12px;
+  margin-top: 14px;
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .pmOption {
   width: 100%;
   text-align: left;
-
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
-
-  padding: 12px 12px;
-  border-radius: 16px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.9);
-
+  padding: 14px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
   cursor: pointer;
+  box-shadow: var(--shadow-soft);
   transition:
     transform 160ms ease,
     background 160ms ease,
@@ -171,8 +164,8 @@
 
 .pmOption:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: #fbfdff;
+  border-color: var(--border-strong);
 }
 
 .pmOption:active {
@@ -185,40 +178,39 @@
 }
 
 .pmRadio {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   border-radius: 999px;
   margin-top: 3px;
-
-  border: 2px solid rgba(255, 255, 255, 0.45);
+  border: 2px solid #94a3b8;
   background: transparent;
-  flex: 0 0 14px;
+  flex: 0 0 15px;
 }
 
 .pmOptionText {
-  line-height: 1.5;
-  font-weight: 800;
-  letter-spacing: 0.1px;
+  line-height: 1.6;
+  font-weight: 700;
+  color: var(--text);
 }
 
 .pmOption.selected {
-  border-color: rgba(63, 61, 255, 0.34);
+  border-color: rgba(79, 70, 229, 0.18);
   background: linear-gradient(
     135deg,
-    rgba(63, 61, 255, 0.16),
-    rgba(0, 194, 168, 0.1)
+    rgba(79, 70, 229, 0.1),
+    rgba(6, 182, 212, 0.07)
   );
-  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.14);
+  box-shadow: 0 14px 28px rgba(79, 70, 229, 0.12);
 }
 
 .pmOption.selected .pmRadio {
-  border-color: rgba(255, 255, 255, 0.65);
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  box-shadow: 0 12px 22px rgba(63, 61, 255, 0.18);
+  border-color: rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.15);
 }
 
 .pmActions {
-  margin-top: 14px;
+  margin-top: 16px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
@@ -226,10 +218,11 @@
 
 .pmPrimary,
 .pmGhost {
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -239,19 +232,16 @@
 }
 
 .pmPrimary {
-  border: 1px solid rgba(63, 61, 255, 0.28);
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.22),
-    rgba(0, 194, 168, 0.12)
-  );
-  color: rgba(255, 255, 255, 0.92);
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  box-shadow: 0 16px 32px rgba(79, 70, 229, 0.16);
 }
 
 .pmPrimary:hover {
   transform: translateY(-1px);
-  border-color: rgba(63, 61, 255, 0.42);
-  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  box-shadow: 0 18px 36px rgba(79, 70, 229, 0.18);
 }
 
 .pmPrimary:active {
@@ -266,15 +256,17 @@
 }
 
 .pmGhost {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .pmGhost:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .pmGhost:active {
@@ -287,73 +279,73 @@
   box-shadow: var(--focus);
 }
 
-/* Results */
 .pmScoreCard {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
-
-  padding: 14px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
   background:
     radial-gradient(
-      700px 320px at 12% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      600px 240px at 12% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      700px 320px at 88% 10%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      600px 240px at 88% 10%,
+      rgba(6, 182, 212, 0.07),
+      transparent 58%
     ),
-    rgba(255, 255, 255, 0.04);
+    linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  box-shadow: var(--shadow-soft);
 }
 
 .pmScoreTitle {
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.78);
+  font-weight: 800;
+  color: var(--muted);
   font-size: 12px;
-  letter-spacing: 0.25px;
+  letter-spacing: 0.18px;
 }
 
 .pmScoreValue {
   margin-top: 6px;
-  font-weight: 1000;
-  font-size: 32px;
-  letter-spacing: -0.8px;
+  font-weight: 900;
+  font-size: 34px;
+  letter-spacing: -1px;
+  color: var(--text);
 }
 
 .pmScoreTotal {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 900;
+  font-size: 17px;
+  color: var(--muted);
+  font-weight: 800;
 }
 
 .pmScoreSub {
   margin-top: 6px;
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
-  line-height: 1.5;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
   max-width: 52ch;
 }
 
 .pmScoreBadge {
   align-self: center;
   text-align: center;
-
   min-width: 120px;
-  padding: 12px 12px;
+  padding: 14px 12px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
 }
 
 .pmScorePct {
-  font-weight: 1000;
-  font-size: 22px;
-  background: linear-gradient(90deg, var(--primary), var(--accent));
+  font-weight: 900;
+  font-size: 24px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -362,18 +354,19 @@
 .pmScoreBadgeText {
   margin-top: 2px;
   font-size: 12px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.72);
+  font-weight: 800;
+  color: var(--muted);
 }
 
 .pmReview {
-  margin-top: 14px;
+  margin-top: 16px;
 }
 
 .pmReviewTitle {
   margin: 0 0 10px;
-  font-size: 14px;
-  letter-spacing: 0.2px;
+  font-size: 15px;
+  letter-spacing: 0.12px;
+  color: var(--text);
 }
 
 .pmReviewGrid {
@@ -382,20 +375,21 @@
 }
 
 .pmReviewCard {
-  padding: 12px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
 }
 
 .pmReviewCard.ok {
-  border-color: rgba(0, 194, 168, 0.2);
-  background: rgba(0, 194, 168, 0.06);
+  border-color: rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.06);
 }
 
 .pmReviewCard.bad {
-  border-color: rgba(255, 80, 80, 0.22);
-  background: rgba(255, 80, 80, 0.06);
+  border-color: rgba(239, 68, 68, 0.16);
+  background: rgba(239, 68, 68, 0.06);
 }
 
 .pmReviewQ {
@@ -405,23 +399,23 @@
 }
 
 .pmReviewNum {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 10px;
   display: grid;
   place-items: center;
-  font-weight: 1000;
+  font-weight: 900;
   font-size: 12px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.86);
-  flex: 0 0 26px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+  flex: 0 0 28px;
 }
 
 .pmReviewPrompt {
-  font-weight: 900;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 800;
+  line-height: 1.55;
+  color: var(--text);
 }
 
 .pmReviewAns {
@@ -434,18 +428,18 @@
 
 .pmReviewLabel {
   font-size: 12px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.65);
+  font-weight: 800;
+  color: var(--muted);
 }
 
 .pmReviewValue {
   font-size: 13px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.86);
+  font-weight: 800;
+  color: var(--text-soft);
 }
 
 .pmReviewValue.strong {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--text);
 }
 
 .pmMark {
@@ -455,21 +449,21 @@
 .pmExplain {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .pmExplainText {
   margin-top: 6px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 12px;
-  line-height: 1.6;
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.65;
 }
 
-/* Responsive */
 @media (max-width: 520px) {
   .pmProgressTrack {
     width: 140px;
   }
+
   .pmPrimary,
   .pmGhost {
     width: 100%;

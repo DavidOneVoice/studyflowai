@@ -2,129 +2,111 @@ import { useEffect, useMemo, useState } from "react";
 import { resetState } from "./lib/storage";
 import "./App.css";
 import "./styles/ui.css";
-import QuizSetDetails from "./pages/QuizSetDetails";
+
 import Start from "./pages/Start";
 import Planner from "./pages/Planner";
 import Schedule from "./pages/Schedule";
 import QuizBuilder from "./pages/QuizBuilder";
 import Summaries from "./pages/Summaries";
 import QuizSets from "./pages/QuizSets";
+import QuizSetDetails from "./pages/QuizSetDetails";
 import CBTRoom from "./pages/CBTRoom";
 
-/**
- * Route table for hash-based navigation.
- * Each key maps to a label (for readability) and a React page component.
- */
 const PAGES = {
-  start: { label: "Start", component: Start },
-  planner: { label: "Study Planner", component: Planner },
+  home: { label: "Home", component: Start },
+  plan: { label: "Study Plan", component: Planner },
+  practice: { label: "Practice", component: QuizBuilder },
+  notes: { label: "AI Notes", component: Summaries },
+  library: { label: "Library", component: QuizSets },
+
   schedule: { label: "Schedule", component: Schedule },
-  quiz: { label: "Quiz Builder", component: QuizBuilder },
-  quizSets: { label: "Quiz Sets", component: QuizSets },
-  summaries: { label: "Summaries", component: Summaries },
-  quizSet: { label: "Quiz Set", component: QuizSetDetails },
-  cbt: { label: "CBT Room", component: CBTRoom },
+  quizSet: { label: "Practice Set", component: QuizSetDetails },
+  cbt: { label: "Practice Session", component: CBTRoom },
 };
 
-/**
- * Normalizes hash routes into known page keys.
- * Supports aliases so links like #/home or #/timetable still resolve correctly.
- */
 function normalizeHashKey(rawHash) {
-  const raw = rawHash || "#/start";
+  const raw = rawHash || "#/home";
 
-  // Remove leading "#/" or "#", remove query string, and strip trailing slashes.
   let key = raw.replace(/^#\/?/, "");
   key = key.split("?")[0].trim();
   key = key.replace(/\/+$/, "");
   const lower = key.toLowerCase();
 
-  // Common aliases to make routing more forgiving.
   const ALIASES = {
-    "": "start",
-    start: "start",
-    home: "start",
-    planner: "planner",
+    "": "home",
+    start: "home",
+    home: "home",
+
+    planner: "plan",
+    "study-plan": "plan",
+    studyplan: "plan",
+    plan: "plan",
+
     schedule: "schedule",
     timetable: "schedule",
-    quiz: "quiz",
-    quizbuilder: "quiz",
-    summaries: "summaries",
-    summary: "summaries",
-    quizsets: "quizSets",
-    "quiz-sets": "quizSets",
+
+    quiz: "practice",
+    quizbuilder: "practice",
+    practice: "practice",
+
+    summaries: "notes",
+    summary: "notes",
+    notes: "notes",
+    "ai-notes": "notes",
+    ainotes: "notes",
+
+    quizsets: "library",
+    "quiz-sets": "library",
+    library: "library",
+    materials: "library",
+
     quizset: "quizSet",
     "quiz-set": "quizSet",
     quizsetdetails: "quizSet",
     "quiz-set-details": "quizSet",
+
     cbt: "cbt",
-    practice: "cbt",
     exam: "cbt",
     cbtr: "cbt",
   };
 
-  // Return the alias if it exists; otherwise return the cleaned key.
-  return ALIASES[lower] || key;
+  return ALIASES[lower] || lower;
 }
 
-/**
- * Returns the current page key from the URL hash.
- * Falls back to "start" for unknown routes.
- */
 function getHashPage() {
   const normalized = normalizeHashKey(window.location.hash);
-  return PAGES[normalized] ? normalized : "start";
+  return PAGES[normalized] ? normalized : "home";
 }
 
-/**
- * App shell:
- * - Hash-based navigation
- * - Top nav + mobile menu
- * - Page renderer for the active route
- * - Data reset action (clears localStorage)
- */
 export default function App() {
   const [page, setPage] = useState(() => getHashPage());
   const [menuOpen, setMenuOpen] = useState(false);
 
-  /**
-   * Listen for browser hash changes and update the active page.
-   */
   useEffect(() => {
     const onHashChange = () => setPage(getHashPage());
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  /**
-   * Close the mobile menu whenever the page changes.
-   */
   useEffect(() => {
     setMenuOpen(false);
   }, [page]);
 
-  /**
-   * Resolve the active page component from the page map.
-   */
   const ActivePage = useMemo(() => PAGES[page].component, [page]);
 
-  /**
-   * Navigate to a known route.
-   * Falls back to "start" if an unknown route is requested.
-   */
   function go(to) {
-    setPage(PAGES[to] ? to : "start");
-    window.location.hash = `#/${to}`;
+    const next = PAGES[to] ? to : "home";
+    setPage(next);
+    window.location.hash = `#/${next}`;
   }
 
   return (
     <div className="app">
       <nav className="nav">
         <div className="navLeft">
-          {/* Brand button navigates home */}
           <button
             className="brand"
-            onClick={() => go("start")}
+            onClick={() => go("home")}
             aria-label="Go to Home"
             type="button"
           >
@@ -139,10 +121,9 @@ export default function App() {
             </span>
           </button>
 
-          <p className="subtitle">A Smart Study Planner &amp; Quiz Builder.</p>
+          <p className="subtitle">Plan, learn, and practice with AI.</p>
         </div>
 
-        {/* Mobile menu toggle */}
         <button
           className="menuBtn"
           type="button"
@@ -155,62 +136,52 @@ export default function App() {
           <span className="menuDot" />
         </button>
 
-        {/* Nav links (collapsible on mobile) */}
         <div className={menuOpen ? "navLinks open" : "navLinks"}>
           <button
-            className={page === "start" ? "navBtn active" : "navBtn"}
-            onClick={() => go("start")}
+            className={page === "home" ? "navBtn active" : "navBtn"}
+            onClick={() => go("home")}
             type="button"
           >
             Home
           </button>
 
           <button
-            className={page === "planner" ? "navBtn active" : "navBtn"}
-            onClick={() => go("planner")}
+            className={page === "plan" ? "navBtn active" : "navBtn"}
+            onClick={() => go("plan")}
             type="button"
           >
-            Study Planner
+            Study Plan
           </button>
 
           <button
-            className={page === "schedule" ? "navBtn active" : "navBtn"}
-            onClick={() => go("schedule")}
+            className={page === "practice" ? "navBtn active" : "navBtn"}
+            onClick={() => go("practice")}
             type="button"
           >
-            Schedule
+            Practice
           </button>
 
           <button
-            className={page === "quiz" ? "navBtn active" : "navBtn"}
-            onClick={() => go("quiz")}
+            className={page === "notes" ? "navBtn active" : "navBtn"}
+            onClick={() => go("notes")}
             type="button"
           >
-            Quiz Builder
+            AI Notes
           </button>
 
           <button
-            className={page === "quizSets" ? "navBtn active" : "navBtn"}
-            onClick={() => go("quizSets")}
+            className={page === "library" ? "navBtn active" : "navBtn"}
+            onClick={() => go("library")}
             type="button"
           >
-            Quiz Sets
+            Library
           </button>
 
-          <button
-            className={page === "summaries" ? "navBtn active" : "navBtn"}
-            onClick={() => go("summaries")}
-            type="button"
-          >
-            Summaries
-          </button>
-
-          {/* Clears localStorage state and forces a full reload to reset UI cleanly */}
           <button
             className="navBtn danger"
             onClick={() => {
               resetState();
-              window.location.hash = "#/start";
+              window.location.hash = "#/home";
               window.location.reload();
             }}
             type="button"
@@ -220,7 +191,6 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Active page renderer */}
       <main className="page">
         <ActivePage />
       </main>

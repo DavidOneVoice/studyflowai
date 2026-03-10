@@ -1,31 +1,27 @@
 .qbCard {
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.03)
-  );
-  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
 .qbHeader {
-  padding: 18px 18px 12px;
+  padding: 22px 22px 14px;
   position: relative;
   background:
     radial-gradient(
-      900px 420px at 10% 0%,
-      rgba(63, 61, 255, 0.22),
-      transparent 55%
+      700px 280px at 10% 0%,
+      rgba(79, 70, 229, 0.1),
+      transparent 58%
     ),
     radial-gradient(
-      800px 380px at 90% 10%,
-      rgba(0, 194, 168, 0.16),
-      transparent 60%
+      700px 280px at 90% 10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  border-bottom: 1px solid var(--border);
 }
 
 .qbHeaderTop {
@@ -41,12 +37,12 @@
   align-items: center;
   padding: 8px 12px;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.25px;
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(63, 61, 255, 0.26);
-  background: rgba(63, 61, 255, 0.14);
+  letter-spacing: 0.18px;
+  color: var(--primary-700);
+  border: 1px solid rgba(79, 70, 229, 0.14);
+  background: rgba(79, 70, 229, 0.08);
 }
 
 .qbBadges {
@@ -60,35 +56,36 @@
   font-weight: 800;
   padding: 7px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
 }
 
 .qbTitle {
-  margin: 12px 0 8px;
-  font-size: clamp(20px, 2.2vw, 28px);
-  letter-spacing: -0.6px;
-  line-height: 1.15;
+  margin: 14px 0 8px;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.8px;
+  line-height: 1.12;
+  color: var(--text);
 }
 
 .qbSub {
   margin: 0;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.75;
   font-size: 14px;
-  max-width: 80ch;
+  max-width: 76ch;
 }
 
 .qbBody {
-  padding: 16px 18px 18px;
+  padding: 18px 22px 22px;
 }
 
 .qbGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .qbField {
@@ -99,9 +96,8 @@
 .qbLabel {
   font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.86);
-  margin-top: 2rem;
+  letter-spacing: 0.15px;
+  color: var(--text-soft);
 }
 
 .qbInput,
@@ -109,111 +105,118 @@
 .qbTextarea {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  padding: 12px 14px;
   outline: none;
+  font: inherit;
   transition:
     box-shadow 160ms ease,
     border 160ms ease,
-    background 160ms ease,
-    transform 160ms ease;
+    background 160ms ease;
 }
 
 .qbTextarea {
   min-height: 190px;
   resize: vertical;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .qbInput:focus,
 .qbSelect:focus,
 .qbTextarea:focus {
-  border-color: rgba(63, 61, 255, 0.38);
+  border-color: rgba(79, 70, 229, 0.4);
   box-shadow: var(--focus);
-  background: rgba(255, 255, 255, 0.06);
+  background: #ffffff;
 }
 
 .qbInput::placeholder,
 .qbTextarea::placeholder {
-  color: rgba(255, 255, 255, 0.45);
+  color: #94a3b8;
+}
+
+.qbSelect {
+  appearance: none;
+  padding-right: 38px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) 50%,
+    calc(100% - 13px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
 }
 
 .qbSelect option {
-  color: black;
+  color: #0f172a;
+  background: #ffffff;
 }
 
 .qbHelp {
   margin: 0;
-  color: rgba(255, 255, 255, 0.68);
+  color: var(--muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-/* ---------- Premium Upload Dropzone ---------- */
 .qbUpload {
   position: relative;
   overflow: hidden;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-
   width: 100%;
-  min-height: 170px;
+  min-height: 180px;
   padding: 26px;
-
   border-radius: 22px;
-  border: 1px dashed rgba(255, 255, 255, 0.18);
-
+  border: 1.5px dashed rgba(79, 70, 229, 0.18);
   background:
     radial-gradient(
-      800px 300px at 10% 0%,
-      rgba(63, 61, 255, 0.18),
+      700px 220px at 10% 0%,
+      rgba(79, 70, 229, 0.08),
       transparent 60%
     ),
     radial-gradient(
-      800px 300px at 90% 100%,
-      rgba(0, 194, 168, 0.15),
+      700px 220px at 90% 100%,
+      rgba(6, 182, 212, 0.08),
       transparent 60%
     ),
-    rgba(255, 255, 255, 0.04);
-
-  backdrop-filter: blur(18px);
-
+    linear-gradient(180deg, #fbfdff 0%, #f8fbff 100%);
   cursor: pointer;
-
   transition:
-    border 240ms ease,
-    background 240ms ease,
-    transform 200ms ease,
-    box-shadow 240ms ease;
+    border 220ms ease,
+    background 220ms ease,
+    transform 180ms ease,
+    box-shadow 220ms ease;
 }
 
 .qbUpload:hover {
-  transform: translateY(-3px);
-  border-color: rgba(63, 61, 255, 0.45);
-  box-shadow: 0 25px 50px rgba(63, 61, 255, 0.18);
+  transform: translateY(-2px);
+  border-color: rgba(79, 70, 229, 0.34);
+  box-shadow: 0 18px 40px rgba(79, 70, 229, 0.1);
 }
 
 .qbUpload.dragging {
-  border-color: rgba(0, 194, 168, 0.65);
+  border-color: rgba(6, 182, 212, 0.5);
   background:
     radial-gradient(
-      800px 300px at 10% 0%,
-      rgba(63, 61, 255, 0.28),
+      700px 220px at 10% 0%,
+      rgba(79, 70, 229, 0.14),
       transparent 60%
     ),
     radial-gradient(
-      800px 300px at 90% 100%,
-      rgba(0, 194, 168, 0.25),
+      700px 220px at 90% 100%,
+      rgba(6, 182, 212, 0.14),
       transparent 60%
     ),
-    rgba(255, 255, 255, 0.06);
-  box-shadow: 0 30px 60px rgba(0, 194, 168, 0.22);
+    linear-gradient(180deg, #f8fbff 0%, #f4fbff 100%);
+  box-shadow: 0 22px 44px rgba(6, 182, 212, 0.12);
 }
 
 .qbFile {
@@ -223,17 +226,12 @@
   cursor: pointer;
 }
 
-/* Icon */
 .qbUploadIcon {
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.85),
-    rgba(0, 194, 168, 0.85)
-  );
-  box-shadow: 0 20px 40px rgba(63, 61, 255, 0.25);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 18px 36px rgba(79, 70, 229, 0.16);
   position: relative;
 }
 
@@ -257,14 +255,14 @@
 }
 
 .qbUploadTitle {
-  font-weight: 1000;
+  font-weight: 800;
   font-size: 14px;
   letter-spacing: -0.2px;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text);
 }
 
 .qbUploadSub {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
   font-size: 12.5px;
   line-height: 1.55;
 }
@@ -275,78 +273,73 @@
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(0, 194, 168, 0.2);
-  background: rgba(0, 194, 168, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.14);
+  background: rgba(34, 197, 94, 0.08);
 }
 
 .qbFileTag {
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 194, 168, 0.24);
-  background: rgba(0, 194, 168, 0.1);
-  color: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(34, 197, 94, 0.16);
+  background: rgba(34, 197, 94, 0.08);
+  color: #166534;
 }
 
 .qbFileName {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
   font-size: 13px;
 }
 
 .qbCounter {
   margin-top: -2px;
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
   text-align: right;
 }
 
 .qbError {
   margin-top: 12px;
-  padding: 12px 12px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 80, 80, 0.28);
-  background: rgba(255, 80, 80, 0.1);
-  color: rgba(255, 255, 255, 0.92);
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(239, 68, 68, 0.14);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .qbActions {
-  margin-top: 14px;
+  margin-top: 16px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .qbPrimary {
-  border: 1px solid rgba(63, 61, 255, 0.28);
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.22),
-    rgba(0, 194, 168, 0.12)
-  );
-  color: rgba(255, 255, 255, 0.92);
-  padding: 11px 14px;
-  border-radius: 14px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-weight: 800;
+  letter-spacing: 0.12px;
   cursor: pointer;
-
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
   transition:
     transform 160ms ease,
     background 160ms ease,
-    border 160ms ease,
     box-shadow 160ms ease;
 }
 
 .qbPrimary:hover {
   transform: translateY(-1px);
-  border-color: rgba(63, 61, 255, 0.4);
-  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  box-shadow: 0 18px 38px rgba(79, 70, 229, 0.18);
 }
 
 .qbPrimary:active {
@@ -355,11 +348,28 @@
 
 .qbPrimary:focus-visible {
   outline: none;
-  box-shadow: var(--focus2);
+  box-shadow: var(--focus-2);
 }
 
 @media (max-width: 920px) {
   .qbGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .qbHeader,
+  .qbBody {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .qbUpload {
+    min-height: 160px;
+    padding: 20px;
+  }
+
+  .qbPrimary {
+    width: 100%;
   }
 }

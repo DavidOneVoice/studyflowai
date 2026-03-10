@@ -2,14 +2,14 @@
   position: fixed;
   inset: 0;
   z-index: 90;
-  margin-top: 10rem;
   display: grid;
   place-items: center;
   padding: 18px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(15, 23, 42, 0.32);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   animation: qsmFade 180ms ease both;
+  margin-top: 15rem;
 }
 
 @keyframes qsmFade {
@@ -21,41 +21,32 @@
   }
 }
 
-@media screen and (max-width: 650px) {
-  .qsmOverlay {
-    margin-top: 0rem;
-  }
-}
-
 .qsmCard {
   width: min(620px, 100%);
-  border-radius: 22px;
+  border-radius: 24px;
   overflow: hidden;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--border);
   background:
     radial-gradient(
-      900px 520px at 15% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      700px 280px at 15% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      900px 520px at 85% 20%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      700px 280px at 85% 20%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(15, 23, 48, 0.94);
-
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.14);
   transform-origin: center;
   animation: qsmPop 220ms ease both;
-  margin-top: 5rem;
 }
 
 @keyframes qsmPop {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(10px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -68,15 +59,15 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--border);
 }
 
 .qsmTitle {
-  font-weight: 1000;
-  font-size: 18px;
-  letter-spacing: -0.4px;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  color: var(--text);
 }
 
 .qsmSetTitle {
@@ -84,45 +75,46 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.82);
+  color: var(--text-soft);
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .qsmSetPill {
-  font-weight: 1000;
+  font-weight: 800;
   font-size: 11px;
-  letter-spacing: 0.25px;
-
+  letter-spacing: 0.18px;
   padding: 6px 9px;
   border-radius: 999px;
-
-  border: 1px solid rgba(0, 194, 168, 0.22);
-  background: rgba(0, 194, 168, 0.1);
-  color: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(6, 182, 212, 0.14);
+  background: rgba(6, 182, 212, 0.08);
+  color: #0f766e;
 }
 
 .qsmClose {
   border-radius: 14px;
-  padding: 9px 12px;
-  font-weight: 1000;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-weight: 800;
   cursor: pointer;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.92);
-
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
   transition:
     transform 160ms ease,
     background 160ms ease,
     border 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    color 160ms ease;
 }
 
 .qsmClose:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .qsmClose:active {
@@ -135,16 +127,17 @@
 }
 
 .qsmBody {
-  padding: 14px 16px 8px;
+  padding: 16px 18px 10px;
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .qsmSection {
-  padding: 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  box-shadow: var(--shadow-soft);
 }
 
 .qsmLabelRow {
@@ -157,26 +150,38 @@
 }
 
 .qsmLabel {
-  font-weight: 1000;
+  font-weight: 800;
   font-size: 13px;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.15px;
+  color: var(--text);
 }
 
 .qsmMiniHint {
   font-size: 12px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.65);
+  font-weight: 800;
+  color: var(--muted);
 }
 
 .qsmSelect {
   width: 100%;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  padding: 12px 14px;
   outline: none;
+  font: inherit;
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) 50%,
+    calc(100% - 13px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
   transition:
     box-shadow 160ms ease,
     border 160ms ease,
@@ -184,21 +189,20 @@
 }
 
 .qsmSelect option {
-  background: rgba(15, 23, 48, 0.94);
-  color: rgba(255, 255, 255, 0.92);
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .qsmSelect:focus {
-  border-color: rgba(63, 61, 255, 0.38);
+  border-color: rgba(79, 70, 229, 0.4);
   box-shadow: var(--focus);
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .qsmNote {
   margin: 10px 0 0;
   font-size: 12px;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.55;
+  color: var(--muted);
 }
 
 .qsmTimeModes {
@@ -210,14 +214,12 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
-
-  padding: 12px 12px;
+  padding: 13px;
   border-radius: 18px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  background: #ffffff;
   cursor: pointer;
-
+  box-shadow: var(--shadow-soft);
   transition:
     transform 160ms ease,
     background 160ms ease,
@@ -227,22 +229,23 @@
 
 .qsmMode:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: #fbfdff;
+  border-color: var(--border-strong);
 }
 
 .qsmMode.active {
-  border-color: rgba(63, 61, 255, 0.3);
+  border-color: rgba(79, 70, 229, 0.16);
   background: linear-gradient(
     135deg,
-    rgba(63, 61, 255, 0.16),
-    rgba(0, 194, 168, 0.1)
+    rgba(79, 70, 229, 0.1),
+    rgba(6, 182, 212, 0.07)
   );
-  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.12);
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.12);
 }
 
 .qsmRadio {
   margin-top: 4px;
+  accent-color: var(--primary);
 }
 
 .qsmModeText {
@@ -251,23 +254,23 @@
 }
 
 .qsmModeTitle {
-  font-weight: 1000;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: -0.2px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.1px;
 }
 
 .qsmStrong {
   margin-left: 8px;
-  background: linear-gradient(90deg, var(--primary), var(--accent));
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .qsmModeSub {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .qsmCustomRow {
@@ -275,21 +278,21 @@
   gap: 10px;
   flex-wrap: wrap;
   align-items: center;
-  padding: 10px 12px;
-
+  padding: 12px 13px;
   border-radius: 18px;
-  border: 1px dashed rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed var(--border-strong);
+  background: #f8fbff;
 }
 
 .qsmNumber {
   width: 160px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.92);
-  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  padding: 12px 14px;
   outline: none;
+  font: inherit;
   transition:
     box-shadow 160ms ease,
     border 160ms ease,
@@ -297,49 +300,49 @@
 }
 
 .qsmNumber:focus {
-  border-color: rgba(63, 61, 255, 0.38);
+  border-color: rgba(79, 70, 229, 0.4);
   box-shadow: var(--focus);
-  background: rgba(255, 255, 255, 0.06);
 }
 
 .qsmUnit {
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 900;
+  color: var(--text-soft);
+  font-weight: 800;
   font-size: 12px;
 }
 
 .qsmActions {
-  padding: 14px 16px 16px;
+  padding: 14px 18px 18px;
   display: flex;
   gap: 10px;
   justify-content: flex-end;
   flex-wrap: wrap;
-
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--border);
 }
 
 .qsmBtn {
-  border-radius: 14px;
-  padding: 10px 14px;
-  font-weight: 1000;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.92);
-
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
   transition:
     transform 160ms ease,
     background 160ms ease,
     border 160ms ease,
-    box-shadow 160ms ease;
+    box-shadow 160ms ease,
+    color 160ms ease;
 }
 
 .qsmBtn:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .qsmBtn:active {
@@ -352,16 +355,34 @@
 }
 
 .qsmPrimary {
-  border-color: rgba(63, 61, 255, 0.28);
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.22),
-    rgba(0, 194, 168, 0.12)
-  );
+  border: 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
+}
+
+.qsmPrimary:hover {
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  color: #ffffff;
 }
 
 .qsmTip {
-  padding: 0 16px 14px;
-  color: rgba(255, 255, 255, 0.55);
+  padding: 0 18px 14px;
+  color: var(--muted);
   font-size: 12px;
+}
+
+@media (max-width: 650px) {
+  .qsmOverlay {
+    padding: 12px;
+    margin-top: 9rem;
+  }
+
+  .qsmActions .qsmBtn {
+    width: 100%;
+  }
+
+  .qsmNumber {
+    width: 100%;
+  }
 }

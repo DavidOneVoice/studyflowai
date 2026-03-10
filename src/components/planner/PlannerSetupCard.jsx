@@ -7,15 +7,7 @@ import {
 } from "../../lib/dateHelpers";
 import "./PlannerSetupCard.css";
 
-/**
- * Planner setup UI for:
- * - Step 1: Adding a course (name, exam date, priority/workload)
- * - Step 2: Defining study availability (days + time window + session length)
- *
- * All form state is controlled by the parent component via props.
- */
 export default function PlannerSetupCard({
-  // course form
   name,
   setName,
   examDate,
@@ -23,41 +15,35 @@ export default function PlannerSetupCard({
   workload,
   setWorkload,
   onAddCourse,
-
-  // availability + state
   availability,
   setAvailability,
-
-  // errors
   errors = [],
 }) {
   return (
     <div className="pscCard card">
       <header className="pscHeader">
-        <div className="pscBadge">Step 1</div>
-        <h3 className="pscTitle">Add a Course</h3>
+        <div className="pscBadge">Study Setup</div>
+        <h3 className="pscTitle">Add a subject</h3>
         <p className="pscSub">
-          Add your course name, exam date, and priority. Priority helps the
-          planner allocate time.
+          Enter your subject, exam date, and priority so StudyFlow AI can build
+          your reading plan.
         </p>
       </header>
 
-      {/* Course creation form (submit handled by parent via onAddCourse) */}
       <form onSubmit={onAddCourse} className="pscFormGrid">
         <div className="field">
-          <label>Course name</label>
+          <label>Subject name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., CSC 101 - Intro to Computing"
           />
-          <p className="pscHint">Enter your course name</p>
+          <p className="pscHint">Enter the subject you want to prepare for</p>
         </div>
 
         <div className="field">
           <label>Exam date</label>
           <DatePicker
-            // DatePicker uses Date objects; helpers convert between ISO strings and Date.
             selected={isoToDate(examDate)}
             onChange={(d) => setExamDate(dateToIso(d))}
             placeholderText="Select exam date"
@@ -67,7 +53,7 @@ export default function PlannerSetupCard({
             showPopperArrow={false}
           />
           <p className="pscHint">
-            This helps the scheduler prioritize what’s closer.
+            Your exam date helps the app decide what needs attention first.
           </p>
         </div>
 
@@ -77,19 +63,18 @@ export default function PlannerSetupCard({
             value={workload}
             onChange={(e) => setWorkload(Number(e.target.value))}
           >
-            {/* Generate priority options 1..10 */}
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <option id="priority-option" key={n} value={n}>
                 {n}
               </option>
             ))}
           </select>
-          <p className="pscHint">10 = most important / heavy course.</p>
+          <p className="pscHint">10 = highest priority or most difficult.</p>
         </div>
 
         <div className="pscCTA">
           <button className="primaryBtn" type="submit">
-            Add course
+            Add Subject
           </button>
         </div>
       </form>
@@ -97,17 +82,15 @@ export default function PlannerSetupCard({
       <div className="pscDivider" />
 
       <header className="pscHeader">
-        <div className="pscBadge pscBadge2">Step 2</div>
-        <h3 className="pscTitle">Study Availability</h3>
+        <div className="pscBadge pscBadge2">Availability</div>
+        <h3 className="pscTitle">Set your reading time</h3>
         <p className="pscSub">
-          Choose the days you can study and your preferred time window. This is
-          used to generate your schedule.
+          Choose the days and time range when you are available to study.
         </p>
       </header>
 
       <div className="pscAvailability">
         <div className="pscDays">
-          {/* Day-of-week chip selector (stored as array of short day strings) */}
           {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => {
             const selected = (availability?.days || []).includes(d);
 
@@ -117,7 +100,6 @@ export default function PlannerSetupCard({
                 type="button"
                 className={selected ? "pscChip active" : "pscChip"}
                 onClick={() => {
-                  // Toggle selected day in the availability.days array.
                   const currentDays = availability?.days || [];
                   const nextDays = selected
                     ? currentDays.filter((x) => x !== d)
@@ -136,7 +118,6 @@ export default function PlannerSetupCard({
           <div className="field">
             <label>Start time</label>
             <DatePicker
-              // Times are stored as "HH:mm" strings; helpers convert to/from Date objects.
               selected={hhmmToDate(availability?.startTime || "18:00")}
               onChange={(d) =>
                 setAvailability({
@@ -184,23 +165,21 @@ export default function PlannerSetupCard({
               onChange={(e) =>
                 setAvailability({
                   ...(availability || {}),
-                  // Store as a number to simplify schedule calculations.
                   sessionMinutes: Number(e.target.value),
                 })
               }
             />
-            <p className="pscHint">Common: 45–90 mins.</p>
+            <p className="pscHint">A common range is 45–90 minutes.</p>
           </div>
         </div>
 
         <div className="pscNote">
           Example: If you choose <strong>18:00–20:00</strong> with{" "}
-          <strong>60 mins</strong> sessions, you’ll have{" "}
-          <strong>2 study slots</strong> per selected day.
+          <strong>60 mins</strong> sessions, you’ll get{" "}
+          <strong>2 study sessions</strong> per selected day.
         </div>
       </div>
 
-      {/* Validation errors from parent (shown as a list) */}
       {errors.length > 0 && (
         <div className="errorBox pscError">
           <strong>Please fix:</strong>

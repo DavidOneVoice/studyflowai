@@ -4,56 +4,33 @@ import QuizSetsTable from "../components/quiz/QuizSetsTable";
 import ConfirmModal from "../components/common/ConfirmModal";
 import "./QuizSets.css";
 
-/**
- * QuizSets page:
- * - Lists all saved quiz sets (stored locally in this browser)
- * - Allows opening a set's details page
- * - Allows deleting a set (with confirmation)
- * - Provides shortcuts to create a new set and to view summaries
- */
 export default function QuizSets() {
   const [state, setState] = useState(() => loadState());
-
-  // Stores the set id that is pending deletion confirmation.
   const [confirmRemoveId, setConfirmRemoveId] = useState(null);
 
-  /**
-   * Keep this page in sync when navigation changes the hash route.
-   * This is useful because other pages may modify localStorage state,
-   * and returning here should reflect the latest saved data.
-   */
   useEffect(() => {
     function onHashChange() {
       setState(loadState());
     }
+
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  /**
-   * Persist state changes to localStorage.
-   */
   useEffect(() => {
     saveState(state);
   }, [state]);
 
-  // Memoize the quizSets list for stable rendering.
   const quizSets = useMemo(() => state.quizSets || [], [state.quizSets]);
 
-  /** Navigates to the quiz set details page. */
   function openSet(setId) {
     window.location.hash = `#/quizSet?setId=${setId}`;
   }
 
-  /** Opens the delete confirmation modal for a specific set id. */
   function confirmRemove(setId) {
     setConfirmRemoveId(setId);
   }
 
-  /**
-   * Deletes the selected quiz set after confirmation.
-   * This removes the set along with its saved questions, summary, and attempts.
-   */
   function handleRemoveConfirmed() {
     if (!confirmRemoveId) return;
 
@@ -70,38 +47,36 @@ export default function QuizSets() {
       <section className="qsHeader card">
         <div className="qsHeaderTop">
           <div className="qsTitleBlock">
-            <h2 className="qsTitle">Quiz Sets</h2>
+            <h2 className="qsTitle">Library</h2>
             <p className="qsSub">
-              Open a set to take quizzes, manage summaries, and view attempts.
+              View your saved practice sets, reopen them anytime, and manage
+              your stored learning materials.
             </p>
           </div>
 
           <div className="qsActions">
-            {/* Navigate to the Quiz Builder page */}
             <button
               className="qsPrimary"
               type="button"
-              onClick={() => (window.location.hash = "#/quiz")}
+              onClick={() => (window.location.hash = "#/practice")}
             >
-              + Create Quiz Set
+              + New Practice Set
             </button>
 
-            {/* Navigate to Summaries page */}
             <button
               className="qsGhost"
               type="button"
-              onClick={() => (window.location.hash = "#/summaries")}
+              onClick={() => (window.location.hash = "#/notes")}
             >
-              Go to Summaries
+              Open AI Notes
             </button>
           </div>
         </div>
 
-        {/* Visual hints only (not needed for screen readers) */}
         <div className="qsHintRow" aria-hidden="true">
-          <span className="qsPill">Save materials</span>
-          <span className="qsPill qsPillAlt">Generate MCQs</span>
-          <span className="qsPill">Track attempts</span>
+          <span className="qsPill">Saved materials</span>
+          <span className="qsPill qsPillAlt">Practice sets</span>
+          <span className="qsPill">Attempt history</span>
         </div>
       </section>
 
@@ -111,11 +86,10 @@ export default function QuizSets() {
         onRemoveSet={confirmRemove}
       />
 
-      {/* Delete confirmation modal */}
       <ConfirmModal
         open={!!confirmRemoveId}
-        title="Delete Quiz Set?"
-        message="This will permanently remove this quiz set, its questions, summary, and attempts from this browser."
+        title="Delete practice set?"
+        message="This will permanently remove this practice set, including its questions, summary, and attempt history from this browser."
         confirmText="Yes, delete it"
         cancelText="Cancel"
         danger

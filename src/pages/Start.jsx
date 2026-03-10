@@ -1,72 +1,76 @@
 import "./Start.css";
 
-/**
- * Start (landing) page:
- * - Introduces what CramLess does
- * - Gives quick steps for first-time users
- * - Displays simple decorative hero artwork (purely visual)
- *
- * Note: This is a presentational component (no state, no side effects).
- */
 export default function Start() {
   return (
     <div className="start">
       <section className="startHero card">
         <div className="startHeroText">
-          {/* Short feature kicker pills */}
           <div className="startKicker">
-            <span className="pill">Study smarter</span>
-            <span className="pill pillAlt">Practice better</span>
+            <span className="pill">Smart Planning</span>
+            <span className="pill pillAlt">AI Learning</span>
           </div>
 
-          {/* Main headline (uses spans for gradient styling) */}
           <h1 className="startTitle">
-            Your <span className="gradA">smart</span> study planner &amp;{" "}
-            <span className="gradB">quiz</span> generator.
+            Study <span className="gradA">smarter</span>, not{" "}
+            <span className="gradB">harder</span>.
           </h1>
 
-          {/* Product description */}
           <p className="startLead">
-            CramLess helps students plan study time intelligently (based on
-            course workload and exam dates) and practice what they learn using
-            generated quizzes and flashcards.
+            StudyFlow AI helps you organize your study time, generate smart
+            summaries from your notes, and practice with AI-generated quizzes.
+            Everything you need to prepare effectively in one simple app.
           </p>
+
+          <div className="startActions">
+            <button
+              className="primaryBtn"
+              onClick={() => (window.location.hash = "#/plan")}
+            >
+              Create Study Plan
+            </button>
+
+            <button
+              className="ghostBtn"
+              onClick={() => (window.location.hash = "#/practice")}
+            >
+              Practice Quiz
+            </button>
+            <button
+              className="primaryBtn"
+              onClick={() => (window.location.hash = "#/summary")}
+            >
+              Generate Summary
+            </button>
+          </div>
 
           <div className="startGrid">
             <div className="infoCard">
-              <h2 className="sectionTitle">What this is for</h2>
+              <h2 className="sectionTitle">Plan your study time</h2>
               <p>
-                Build a realistic plan, stay consistent, and test yourself with
-                practice questions generated from your material.
+                Enter your exam dates and available study hours to generate a
+                balanced study schedule automatically.
               </p>
             </div>
 
             <div className="infoCard">
-              <h2 className="sectionTitle">How to start</h2>
+              <h2 className="sectionTitle">Generate AI notes</h2>
+              <p>
+                Upload or paste your course material and get clear summaries
+                that make revision faster and easier.
+              </p>
+            </div>
 
-              {/* Simple onboarding steps */}
-              <ol className="steps">
-                <li>Add your courses and exam dates.</li>
-                <li>
-                  Select your available study days and preferred study times.
-                </li>
-                <li>Generate a balanced study schedule.</li>
-                <li>
-                  Paste your course material to generate practice quizzes.
-                </li>
-              </ol>
+            <div className="infoCard">
+              <h2 className="sectionTitle">Practice with quizzes</h2>
+              <p>
+                Turn your study material into multiple-choice quizzes and test
+                your understanding anytime.
+              </p>
             </div>
           </div>
-
-          <p className="footerNote">
-            Use the navigation at the top to open the Study Planner or Quiz
-            Builder.
-          </p>
         </div>
 
-        {/* Decorative / non-interactive art section */}
         <div className="startHeroArt" aria-hidden="true">
-          {/* SVG “original” background art (purely decorative) */}
           <div className="orb orb1" />
           <div className="orb orb2" />
           <div className="orb orb3" />
@@ -84,38 +88,48 @@ export default function Start() {
             />
           </svg>
 
-          {/* Mini UI-style cards for visual emphasis */}
           <div className="miniCard">
             <div className="miniDot" />
             <div>
-              <div className="miniTitle">Today’s focus</div>
-              <div className="miniText">Planner • Quiz practice</div>
+              <div className="miniTitle">Today’s Study</div>
+              <div className="miniText">Physics • Calculus</div>
             </div>
           </div>
 
           <div className="miniCard miniCard2">
-            <div className="miniTitle">Tip</div>
+            <div className="miniTitle">AI Tip</div>
             <div className="miniText">
-              Start with 10–20 questions. Increase as you improve.
+              Review summaries first, then test yourself with quizzes.
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer credit information */}
-      <footer className="creditPanel">
-        <div className="creditInner">
-          <div className="creditLine">
-            <span className="creditLabel">Developed by</span>
-            <span className="creditName">Olubukola Deborah Odedairo</span>
-          </div>
-
-          <div className="creditLine muted">
-            Final project for an <strong>MS</strong> at{" "}
-            <strong>St. Mary’s University</strong>
-          </div>
+      <section className="features">
+        <div className="featureCard">
+          <h3>Smart Study Planner</h3>
+          <p>
+            Automatically generate study schedules based on exam dates and
+            available time.
+          </p>
         </div>
-      </footer>
+
+        <div className="featureCard">
+          <h3>AI Summaries</h3>
+          <p>
+            Convert long study materials into structured notes you can review
+            quickly.
+          </p>
+        </div>
+
+        <div className="featureCard">
+          <h3>Quiz Practice</h3>
+          <p>
+            Create and take practice quizzes generated directly from your
+            learning material.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

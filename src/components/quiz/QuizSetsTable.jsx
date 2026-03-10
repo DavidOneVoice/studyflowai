@@ -1,11 +1,6 @@
 import "./QuizSetsTable.css";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
-/**
- * QuizSetsTable displays all saved quiz sets and provides actions to:
- * - Open a set (enter the CBT room for that set)
- * - Remove a set
- */
 export default function QuizSetsTable({
   quizSets = [],
   onOpenSet,
@@ -14,27 +9,25 @@ export default function QuizSetsTable({
   return (
     <section className="qstCard">
       <div className="qstTop">
-        <h3 className="qstTitle">Saved Sets</h3>
-        {/* Display count with correct pluralization */}
+        <h3 className="qstTitle">Saved Practice Sets</h3>
         <div className="qstCount">
           {quizSets.length} set{quizSets.length === 1 ? "" : "s"}
         </div>
       </div>
 
-      {/* Empty state when no sets exist */}
       {quizSets.length === 0 ? (
         <div className="qstEmpty">
           <div className="qstEmptyIcon" aria-hidden="true" />
           <div className="qstEmptyText">
-            <div className="qstEmptyTitle">No saved sets yet</div>
+            <div className="qstEmptyTitle">No practice sets saved yet</div>
             <div className="qstEmptySub">
-              Create a quiz set to generate MCQs anytime.
+              Create your first practice set to start generating questions and
+              saving progress.
             </div>
           </div>
         </div>
       ) : (
-        // Table-like structure using ARIA roles for accessibility.
-        <div className="qstTable" role="table" aria-label="Quiz sets table">
+        <div className="qstTable" role="table" aria-label="Saved practice sets">
           <div className="qstRow qstHead" role="row">
             <div role="columnheader">Title</div>
             <div role="columnheader">Actions</div>
@@ -47,20 +40,20 @@ export default function QuizSetsTable({
               </div>
 
               <div className="qstActions" role="cell">
-                {/* Opens the selected set (parent decides what "open" does) */}
                 <button
                   className="qstOpen"
                   type="button"
                   onClick={() => onOpenSet?.(s.id)}
                 >
-                  CBT Room
+                  Open
                 </button>
 
-                {/* Removes the selected set (parent handles deletion) */}
                 <button
                   className="qstRemove"
                   type="button"
                   onClick={() => onRemoveSet?.(s.id)}
+                  aria-label={`Delete ${s.title}`}
+                  title="Delete practice set"
                 >
                   <DeleteForeverIcon />
                 </button>
@@ -71,7 +64,8 @@ export default function QuizSetsTable({
       )}
 
       <p className="qstFooter">
-        Open a set to take quiz, view attempts, and manage summaries.
+        Open any saved practice set to review, generate questions, and continue
+        learning.
       </p>
     </section>
   );

@@ -226,36 +226,33 @@ app.post("/api/generate-mcqs", async (req, res) => {
       nonce,
     } = req.body;
 
-    // Basic validation: ensures enough text to generate meaningful MCQs.
     if (!sourceText || normalizeText(sourceText).length < 80) {
       return res
         .status(400)
         .json({ error: "Please provide more study material text." });
     }
 
-    // Keep prompt under control
     const MAX_MCQ_SOURCE_CHARS = 35000;
     const { text: safeMaterial, truncated } = capTextEvenly(
       sourceText,
       MAX_MCQ_SOURCE_CHARS,
     );
 
-    // Enforce reasonable bounds on how many questions can be requested at once.
-    const safeCount = Math.max(5, Math.min(Number(count) || 10, 25));
-    // Build a larger pool first, then filter down for diversity.
-    const poolCount = Math.min(40, safeCount * 4);
+    const requestedCount = Number(count) || 10;
+    const safeCount = Math.max(5, Math.min(requestedCount, 100));
 
-    // Sanitize avoid-list: strings only, non-empty, and capped for safety.
+    const poolCount = Math.min(Math.max(safeCount * 5, safeCount + 10), 220);
+
     const safeAvoid = Array.isArray(avoid)
       ? avoid
           .filter((x) => typeof x === "string" && x.trim().length > 0)
-          .slice(0, 40)
+          .slice(0, 80)
       : [];
 
-    // Useful server-side telemetry for debugging prompt sizes and diversity behavior.
     console.log("MCQ request:", {
       title,
-      count: safeCount,
+      requestedCount,
+      safeCount,
       poolCount,
       avoidCount: safeAvoid.length,
       truncatedMaterial: truncated,
@@ -263,7 +260,6 @@ app.post("/api/generate-mcqs", async (req, res) => {
       usedChars: safeMaterial.length,
     });
 
-    // Nonce helps encourage variation across retries for similar material.
     const baseNonce =
       typeof nonce === "string" && nonce.trim().length > 0
         ? nonce.trim()
@@ -271,8 +267,7 @@ app.post("/api/generate-mcqs", async (req, res) => {
 
     let finalQuestions = [];
 
-    // Retry up to 3 times to get sufficiently diverse, valid JSON questions.
-    for (let attempt = 0; attempt < 3; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       const attemptNonce = attempt === 0 ? baseNonce : crypto.randomUUID();
 
       const prompt = `
@@ -281,18 +276,21 @@ You are an expert exam setter and tutor.
 Create ${poolCount} high-quality multiple-choice questions (MCQs) from the study material below.
 
 VERY IMPORTANT:
-- Generate a wide variety of questions. Do not repeat the same "obvious" ones.
+- The final goal is to produce at least ${safeCount} UNIQUE usable questions.
+- Generate a wide variety of questions. Do not repeat the same obvious ideas.
+- Spread questions across the material as much as possible.
 - Avoid reusing or paraphrasing these previous question prompts:
 ${safeAvoid.length ? `- ${safeAvoid.join("\n- ")}` : "- (none)"}
 
 Requirements:
 - Difficulty: ${difficulty} (easy/medium/hard/mixed)
 - Each question must be clear, complete, and based strictly on the material.
-- 4 options (A-D).
+- 4 options only.
 - Exactly 1 correct answer.
 - Provide a short explanation for why it's correct.
 - Use natural language. No broken fragments.
-- Avoid repeating the same question style. Mix:
+- Avoid duplicates and near-duplicates.
+- Mix:
   - definitions
   - conceptual understanding
   - application/scenario
@@ -324,7 +322,6 @@ ${safeMaterial}
         temperature: 1.0,
         presence_penalty: 0.9,
         frequency_penalty: 0.5,
-        // Force strict JSON output to simplify parsing on the server.
         response_format: { type: "json_object" },
         messages: [{ role: "user", content: prompt }],
       });
@@ -332,7 +329,6 @@ ${safeMaterial}
       const rawText = resp.choices?.[0]?.message?.content || "{}";
 
       let data;
-      // If parsing fails, retry with a new nonce (next loop iteration).
       try {
         data = JSON.parse(rawText);
       } catch {
@@ -341,7 +337,6 @@ ${safeMaterial}
 
       const rawQs = Array.isArray(data.questions) ? data.questions : [];
 
-      // Validate and normalize the model output into the API's expected structure.
       const pool = rawQs
         .map((q) => {
           const opts = Array.isArray(q.options) ? q.options : [];
@@ -351,12 +346,17 @@ ${safeMaterial}
           if (opts.length !== 4) return null;
           if (idx < 0 || idx > 3) return null;
 
+          const cleanPrompt = q.prompt.trim();
+          const cleanOptions = opts.map((x) => String(x || "").trim());
+
+          if (!cleanPrompt) return null;
+          if (cleanOptions.some((opt) => !opt)) return null;
+
           return {
             id: crypto.randomUUID(),
-            prompt: q.prompt.trim(),
-            options: opts.map((x) => String(x || "").trim()),
-            // Convenience field: the actual answer text derived from answerIndex.
-            answer: opts[idx],
+            prompt: cleanPrompt,
+            options: cleanOptions,
+            answer: cleanOptions[idx],
             explanation: typeof q.explanation === "string" ? q.explanation : "",
           };
         })
@@ -366,23 +366,27 @@ ${safeMaterial}
 
       const selected = selectDiverseQuestions(pool, safeAvoid, safeCount);
 
-      // Ensure we return a meaningful minimum set before accepting an attempt.
-      if (selected.length >= Math.min(5, safeCount)) {
-        finalQuestions = selected;
+      if (selected.length >= safeCount) {
+        finalQuestions = selected.slice(0, safeCount);
         break;
       }
     }
 
-    if (!finalQuestions.length) {
-      return res.status(500).json({
-        error:
-          "Could not generate fresh questions (too similar to previous). Try again or upload more material.",
+    if (finalQuestions.length < safeCount) {
+      return res.status(422).json({
+        error: `Could only generate ${finalQuestions.length || 0} unique question${
+          finalQuestions.length === 1 ? "" : "s"
+        } from this material. Try a smaller question count or upload more material.`,
       });
     }
 
     return res.json({
       questions: finalQuestions,
-      meta: { truncatedMaterial: truncated },
+      meta: {
+        truncatedMaterial: truncated,
+        requestedCount: safeCount,
+        returnedCount: finalQuestions.length,
+      },
     });
   } catch (err) {
     console.error(err);

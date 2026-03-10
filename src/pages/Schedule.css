@@ -6,7 +6,7 @@
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(3px);
+    filter: blur(2px);
   }
   to {
     opacity: 1;
@@ -16,57 +16,57 @@
 }
 
 .schCard {
-  padding: 18px;
+  padding: 22px;
   background:
     radial-gradient(
-      900px 420px at 12% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      700px 280px at 12% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      820px 380px at 88% 10%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      700px 280px at 88% 10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(255, 255, 255, 0.03);
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .schHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .schBadge {
   display: inline-flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.25px;
-
-  border: 1px solid rgba(0, 194, 168, 0.24);
-  background: rgba(0, 194, 168, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.18px;
+  border: 1px solid rgba(6, 182, 212, 0.14);
+  background: rgba(6, 182, 212, 0.08);
+  color: #0f766e;
 }
 
 .schTitle {
-  margin: 10px 0 8px;
-  font-size: clamp(20px, 2.3vw, 28px);
-  letter-spacing: -0.6px;
-  line-height: 1.15;
+  margin: 12px 0 8px;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: var(--text);
 }
 
 .schSub {
   margin: 0;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.75;
   font-size: 14px;
-  max-width: 85ch;
+  max-width: 80ch;
 }
 
 .schHeaderActions {
@@ -77,21 +77,21 @@
   justify-content: flex-end;
 }
 
-/* Buttons */
 .schPrimary,
 .schGhost {
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease,
     border 160ms ease,
-    opacity 160ms ease;
+    opacity 160ms ease,
+    color 160ms ease;
 }
 
 .schPrimary:disabled,
@@ -103,19 +103,16 @@
 }
 
 .schPrimary {
-  border: 1px solid rgba(63, 61, 255, 0.28);
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.22),
-    rgba(0, 194, 168, 0.12)
-  );
-  color: rgba(255, 255, 255, 0.92);
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
 }
 
 .schPrimary:hover {
   transform: translateY(-1px);
-  border-color: rgba(63, 61, 255, 0.42);
-  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  box-shadow: 0 18px 38px rgba(79, 70, 229, 0.18);
 }
 
 .schPrimary:active {
@@ -123,15 +120,17 @@
 }
 
 .schGhost {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .schGhost:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .schGhost:active {
@@ -144,16 +143,15 @@
   box-shadow: var(--focus);
 }
 
-/* Toolbar */
 .schToolbar {
-  margin-top: 10px;
-  padding: 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  box-shadow: var(--shadow-soft);
   display: flex;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
@@ -161,6 +159,51 @@
 
 .schFilter {
   min-width: 260px;
+}
+
+.schFilter label {
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.15px;
+  color: var(--text-soft);
+  margin-bottom: 7px;
+}
+
+.schFilter select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text);
+  outline: none;
+  appearance: none;
+  padding-right: 36px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 19px) 50%,
+    calc(100% - 13px) 50%;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+  transition:
+    border 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.schFilter select:focus {
+  border-color: rgba(79, 70, 229, 0.4);
+  box-shadow: var(--focus);
+}
+
+.schFilter select option {
+  background: #ffffff;
+  color: #0f172a;
 }
 
 .schTools {
@@ -178,83 +221,205 @@
 }
 
 .schCopied {
-  font-weight: 1000;
+  font-weight: 800;
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .schCount {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
   font-size: 12px;
   text-align: right;
 }
 
 .schCount strong {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--text);
 }
 
-/* Table */
 .schTableWrap {
-  margin-top: 14px;
-  border-radius: 18px;
+  margin-top: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+}
+
+.schTable .row.schedule {
+  display: grid;
+  grid-template-columns: 150px 190px minmax(280px, 1.4fr) 150px;
+  gap: 12px;
+  align-items: center;
+}
+
+.schTable .row.head.schedule {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 14px 14px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.15px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.schTable .row.schedule:not(.head) {
+  padding: 0 14px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  background: #ffffff;
+}
+
+.schTable .row.schedule:not(.head):hover {
+  background: #fbfdff;
 }
 
 .schTable .row.schedule > div {
-  padding-top: 12px;
-  padding-bottom: 12px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+  color: var(--text-soft);
+}
+
+.schTable .row.schedule > div:nth-child(3) {
+  font-weight: 800;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.schTable .row.schedule > div:nth-child(4) {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 197, 94, 0.14);
+  background: rgba(34, 197, 94, 0.08);
+  color: #166534;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.schTable .row.schedule.isToday {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.08),
+    rgba(6, 182, 212, 0.05)
+  );
+}
+
+.schTable .row.schedule.isToday:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.1),
+    rgba(6, 182, 212, 0.06)
+  );
+}
+
+.schTable .row.schedule.isToday > div:nth-child(1)::before {
+  content: "Today";
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  margin-right: 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
+  border: 1px solid rgba(79, 70, 229, 0.16);
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-700);
+}
+
+.schTable .row.schedule.isPast {
+  opacity: 0.68;
+}
+
+.schTable .row.schedule.isPast:hover {
+  opacity: 0.88;
 }
 
 .schFoot {
-  margin: 10px 0 0;
-  color: rgba(255, 255, 255, 0.62);
+  margin: 12px 0 0;
+  color: var(--muted);
   font-size: 12px;
   line-height: 1.6;
 }
 
-/* Empty state */
 .schEmpty {
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 14px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: var(--shadow-soft);
   margin-top: 12px;
 }
 
 .schEmptyIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(0, 194, 168, 0.55),
-    rgba(63, 61, 255, 0.18)
+    rgba(6, 182, 212, 0.42),
+    rgba(79, 70, 229, 0.16)
   );
-  box-shadow: 0 14px 28px rgba(0, 194, 168, 0.1);
+  box-shadow: 0 14px 26px rgba(6, 182, 212, 0.12);
 }
 
 .schEmptyTitle {
-  font-weight: 1000;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .schEmptySub {
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.65);
+  margin-top: 3px;
+  color: var(--muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .schCTA {
   margin-top: 10px;
+}
+
+@media (max-width: 880px) {
+  .schTable .row.schedule {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "course course"
+      "date time"
+      "type type";
+  }
+
+  .schTable .row.schedule > div:nth-child(1) {
+    grid-area: date;
+  }
+
+  .schTable .row.schedule > div:nth-child(2) {
+    grid-area: time;
+  }
+
+  .schTable .row.schedule > div:nth-child(3) {
+    grid-area: course;
+    white-space: normal;
+  }
+
+  .schTable .row.schedule > div:nth-child(4) {
+    grid-area: type;
+  }
 }
 
 @media (max-width: 720px) {
@@ -278,182 +443,5 @@
 
   .schHeaderActions .schGhost {
     width: 100%;
-  }
-}
-/* ---------- Filter field ---------- */
-.schFilter label {
-  display: block;
-  font-size: 12px;
-  font-weight: 1000;
-  letter-spacing: 0.25px;
-  color: rgba(255, 255, 255, 0.78);
-  margin-bottom: 6px;
-}
-
-.schFilter select {
-  width: 100%;
-  padding: 11px 12px;
-  border-radius: 14px;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.92);
-
-  outline: none;
-  appearance: none;
-  padding-right: 24px;
-
-  background-image:
-    linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.65) 50%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.65) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 12px) 50%;
-  background-size:
-    6px 6px,
-    6px 6px;
-  background-repeat: no-repeat;
-
-  transition:
-    border 160ms ease,
-    box-shadow 160ms ease,
-    background 160ms ease;
-}
-
-.schFilter select:focus {
-  border-color: rgba(63, 61, 255, 0.45);
-  box-shadow: 0 0 0 4px rgba(63, 61, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.schFilter select option {
-  background: rgba(255, 255, 255, 0.95);
-  color: #000;
-}
-/* ---------- Table alignment (Schedule) ---------- */
-.schTable .row.schedule {
-  display: grid;
-  grid-template-columns: 150px 190px minmax(280px, 1.4fr) 140px;
-  gap: 12px;
-  align-items: center;
-}
-
-.schTable .row.head.schedule {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-
-  padding: 12px 12px;
-  font-size: 12px;
-  font-weight: 1000;
-  letter-spacing: 0.25px;
-
-  background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.schTable .row.schedule:not(.head) {
-  padding: 0 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.schTable .row.schedule:not(.head):hover {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* Keep course readable without breaking layout */
-.schTable .row.schedule > div:nth-child(3) {
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.92);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Type as a pill */
-.schTable .row.schedule > div:nth-child(4) {
-  justify-self: start;
-  display: inline-flex;
-  align-items: center;
-  height: 30px;
-  padding: 0 10px;
-  border-radius: 999px;
-
-  border: 1px solid rgba(0, 194, 168, 0.18);
-  background: rgba(0, 194, 168, 0.1);
-  color: rgba(255, 255, 255, 0.88);
-}
-
-/* Mobile stacking */
-@media (max-width: 880px) {
-  .schTable .row.schedule {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "course course"
-      "date time"
-      "type type";
-  }
-
-  .schTable .row.schedule > div:nth-child(1) {
-    grid-area: date;
-  }
-  .schTable .row.schedule > div:nth-child(2) {
-    grid-area: time;
-  }
-  .schTable .row.schedule > div:nth-child(3) {
-    grid-area: course;
-    white-space: normal;
-  }
-  .schTable .row.schedule > div:nth-child(4) {
-    grid-area: type;
-  }
-}
-/* ---------- Today / Past highlight ---------- */
-.schTable .row.schedule.isToday {
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.14),
-    rgba(0, 194, 168, 0.08)
-  );
-  border-bottom-color: rgba(63, 61, 255, 0.18);
-}
-
-.schTable .row.schedule.isToday:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.18),
-    rgba(0, 194, 168, 0.1)
-  );
-}
-
-.schTable .row.schedule.isToday > div:nth-child(1)::before {
-  content: "Today";
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  margin-right: 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 1000;
-  letter-spacing: 0.2px;
-
-  border: 1px solid rgba(63, 61, 255, 0.35);
-  background: rgba(63, 61, 255, 0.18);
-  color: rgba(255, 255, 255, 0.92);
-}
-
-/* Past sessions look faded */
-.schTable .row.schedule.isPast {
-  opacity: 0.72;
-}
-
-.schTable .row.schedule.isPast:hover {
-  opacity: 0.9;
-}
-@media screen and (max-width: 400px) {
-  .schFilter select {
-    width: 90%;
   }
 }

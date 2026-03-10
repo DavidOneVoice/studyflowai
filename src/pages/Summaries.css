@@ -6,7 +6,7 @@
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(3px);
+    filter: blur(2px);
   }
   to {
     opacity: 1;
@@ -16,57 +16,57 @@
 }
 
 .sumCard {
-  padding: 18px;
+  padding: 22px;
   background:
     radial-gradient(
-      900px 420px at 12% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      700px 280px at 12% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      820px 380px at 88% 10%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      700px 280px at 88% 10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(255, 255, 255, 0.03);
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .sumHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .sumBadge {
   display: inline-flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.25px;
-
-  border: 1px solid rgba(63, 61, 255, 0.26);
-  background: rgba(63, 61, 255, 0.14);
-  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.18px;
+  border: 1px solid rgba(79, 70, 229, 0.14);
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-700);
 }
 
 .sumTitle {
-  margin: 10px 0 8px;
-  font-size: clamp(20px, 2.3vw, 28px);
-  letter-spacing: -0.6px;
-  line-height: 1.15;
+  margin: 12px 0 8px;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: var(--text);
 }
 
 .sumSub {
   margin: 0;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.75;
   font-size: 14px;
-  max-width: 80ch;
+  max-width: 76ch;
 }
 
 .sumActions {
@@ -79,34 +79,32 @@
 
 .sumPrimary,
 .sumGhost {
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease,
     border 160ms ease,
-    opacity 160ms ease;
+    opacity 160ms ease,
+    color 160ms ease;
 }
 
 .sumPrimary {
-  border: 1px solid rgba(63, 61, 255, 0.28);
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.22),
-    rgba(0, 194, 168, 0.12)
-  );
-  color: rgba(255, 255, 255, 0.92);
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
 }
 
 .sumPrimary:hover {
   transform: translateY(-1px);
-  border-color: rgba(63, 61, 255, 0.42);
-  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  box-shadow: 0 18px 38px rgba(79, 70, 229, 0.18);
 }
 
 .sumPrimary:active {
@@ -114,15 +112,17 @@
 }
 
 .sumGhost {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .sumGhost:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .sumGhost:active {
@@ -135,28 +135,29 @@
   box-shadow: var(--focus);
 }
 
-/* Grid items */
 .sumGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .sumItem {
-  padding: 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
   transition:
     transform 160ms ease,
     background 160ms ease,
-    border 160ms ease;
+    border 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .sumItem:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: #fbfdff;
+  border-color: var(--border-strong);
 }
 
 .sumItemTop {
@@ -167,32 +168,32 @@
 }
 
 .sumItemTitle {
-  font-weight: 1000;
-  letter-spacing: -0.2px;
-  line-height: 1.35;
-  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+  letter-spacing: -0.15px;
+  line-height: 1.4;
+  color: var(--text);
 }
 
 .sumReady {
-  font-weight: 1000;
+  font-weight: 800;
   font-size: 12px;
   padding: 7px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(0, 194, 168, 0.22);
-  background: rgba(0, 194, 168, 0.1);
-  color: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(34, 197, 94, 0.14);
+  background: rgba(34, 197, 94, 0.08);
+  color: #166534;
   flex: 0 0 auto;
 }
 
 .sumHint {
   margin-top: 8px;
-  color: rgba(255, 255, 255, 0.66);
+  color: var(--muted);
   font-size: 12px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .sumItemActions {
-  margin-top: 12px;
+  margin-top: 14px;
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
@@ -200,64 +201,63 @@
 }
 
 .sumCopied {
-  font-weight: 1000;
+  font-weight: 800;
   font-size: 12px;
   padding: 6px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
-/* Empty state */
 .sumEmpty {
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 14px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: var(--shadow-soft);
 }
 
 .sumEmptyIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(63, 61, 255, 0.55),
-    rgba(0, 194, 168, 0.18)
+    rgba(79, 70, 229, 0.42),
+    rgba(6, 182, 212, 0.16)
   );
-  box-shadow: 0 14px 28px rgba(63, 61, 255, 0.12);
+  box-shadow: 0 14px 26px rgba(79, 70, 229, 0.12);
 }
 
 .sumEmptyTitle {
-  font-weight: 1000;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .sumEmptySub {
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.65);
+  margin-top: 3px;
+  color: var(--muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-/* Modal viewer */
 .sumOverlay {
   position: fixed;
   inset: 0;
   z-index: 90;
-
   display: grid;
   place-items: center;
   padding: 18px;
-
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(15, 23, 42, 0.32);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-
   animation: sumFade 180ms ease both;
+  margin-top: 15rem;
 }
 
 @keyframes sumFade {
@@ -272,23 +272,21 @@
 .sumModal {
   width: min(980px, 100%);
   overflow: hidden;
-  margin-top: 17rem;
-  border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  border: 1px solid var(--border);
   background:
     radial-gradient(
-      900px 520px at 15% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      700px 280px at 15% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      900px 520px at 85% 20%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      700px 280px at 85% 20%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(15, 23, 48, 0.94);
-
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: 0 30px 90px rgba(15, 23, 42, 0.14);
   transform-origin: center;
   animation: sumPop 220ms ease both;
 }
@@ -296,7 +294,7 @@
 @keyframes sumPop {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.98);
+    transform: translateY(10px) scale(0.985);
   }
   to {
     opacity: 1;
@@ -305,27 +303,27 @@
 }
 
 .sumModalHeader {
-  padding: 16px 16px 12px;
+  padding: 18px 18px 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
 }
 
 .sumModalTitle {
-  font-weight: 1000;
-  font-size: 18px;
-  letter-spacing: -0.4px;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  color: var(--text);
 }
 
 .sumModalSub {
   margin-top: 6px;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
 .sumModalActions {
@@ -335,43 +333,44 @@
 }
 
 .sumModalBody {
-  padding: 16px;
+  padding: 18px;
   overflow: auto;
   max-height: calc(min(85vh, 900px) - 70px);
 }
 
 .sumText {
   white-space: pre-line;
-  line-height: 1.75;
-  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.8;
+  color: var(--text-soft);
   font-size: 14px;
 }
 
-/* Toast inside modal */
 .sumToast {
-  margin: 10px 16px 0;
+  margin: 12px 18px 0;
   padding: 10px 12px;
   border-radius: 14px;
-  border: 1px solid rgba(0, 194, 168, 0.22);
-  background: rgba(0, 194, 168, 0.1);
-  font-weight: 1000;
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(34, 197, 94, 0.14);
+  background: rgba(34, 197, 94, 0.08);
+  font-weight: 800;
+  color: #166534;
 }
 
-/* Responsive */
 @media (max-width: 820px) {
   .sumGrid {
     grid-template-columns: 1fr;
   }
+
   .sumActions {
     width: 100%;
     justify-content: stretch;
   }
+
   .sumPrimary,
   .sumGhost {
     width: 100%;
   }
-  .sumModal {
-    margin-top: 20rem;
+
+  .sumOverlay {
+    margin-top: 6rem;
   }
 }

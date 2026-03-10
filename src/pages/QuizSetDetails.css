@@ -6,7 +6,7 @@
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(3px);
+    filter: blur(2px);
   }
   to {
     opacity: 1;
@@ -15,63 +15,64 @@
   }
 }
 
-/* Header card */
 .qsdCard {
-  padding: 18px;
+  padding: 22px;
   background:
     radial-gradient(
-      900px 420px at 12% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
+      700px 280px at 12% 0%,
+      rgba(79, 70, 229, 0.08),
+      transparent 58%
     ),
     radial-gradient(
-      820px 380px at 88% 10%,
-      rgba(0, 194, 168, 0.12),
-      transparent 60%
+      700px 280px at 88% 10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
     ),
-    rgba(255, 255, 255, 0.03);
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .qsdTitle {
   margin: 0 0 8px;
-  font-size: 18px;
-  letter-spacing: -0.2px;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  font-weight: 800;
 }
 
 .qsdMuted {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
 .qsdHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 .qsdBadge {
   display: inline-flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.25px;
-
-  border: 1px solid rgba(63, 61, 255, 0.26);
-  background: rgba(63, 61, 255, 0.14);
-  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.18px;
+  border: 1px solid rgba(79, 70, 229, 0.14);
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-700);
 }
 
 .qsdSetTitle {
-  margin: 10px 0 10px;
-  font-size: clamp(20px, 2.3vw, 28px);
-  letter-spacing: -0.6px;
-  line-height: 1.15;
+  margin: 12px 0 12px;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: var(--text);
 }
 
 .qsdStatusRow {
@@ -86,27 +87,29 @@
   align-items: center;
   padding: 8px 12px;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.2px;
-
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.15px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .qsdPill strong {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--text);
 }
 
 .qsdPill.ok {
-  border-color: rgba(63, 61, 255, 0.26);
-  background: rgba(63, 61, 255, 0.12);
+  border-color: rgba(79, 70, 229, 0.14);
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-700);
 }
 
 .qsdPill.ok2 {
-  border-color: rgba(0, 194, 168, 0.24);
-  background: rgba(0, 194, 168, 0.1);
+  border-color: rgba(6, 182, 212, 0.14);
+  background: rgba(6, 182, 212, 0.08);
+  color: #0f766e;
 }
 
 .qsdActions {
@@ -120,18 +123,19 @@
 .qsdPrimary,
 .qsdGhost,
 .qsdDanger {
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease,
     border 160ms ease,
-    opacity 160ms ease;
+    opacity 160ms ease,
+    color 160ms ease;
 }
 
 .qsdPrimary:disabled,
@@ -144,19 +148,16 @@
 }
 
 .qsdPrimary {
-  border: 1px solid rgba(63, 61, 255, 0.28);
-  background: linear-gradient(
-    135deg,
-    rgba(63, 61, 255, 0.22),
-    rgba(0, 194, 168, 0.12)
-  );
-  color: rgba(255, 255, 255, 0.92);
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #ffffff;
+  box-shadow: 0 16px 34px rgba(79, 70, 229, 0.16);
 }
 
 .qsdPrimary:hover {
   transform: translateY(-1px);
-  border-color: rgba(63, 61, 255, 0.42);
-  box-shadow: 0 14px 30px rgba(63, 61, 255, 0.14);
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+  box-shadow: 0 18px 38px rgba(79, 70, 229, 0.18);
 }
 
 .qsdPrimary:active {
@@ -164,15 +165,17 @@
 }
 
 .qsdGhost {
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
 }
 
 .qsdGhost:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .qsdGhost:active {
@@ -180,14 +183,16 @@
 }
 
 .qsdDanger {
-  border: 1px solid rgba(255, 80, 80, 0.3);
-  background: rgba(255, 80, 80, 0.12);
-  color: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(239, 68, 68, 0.16);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
 }
 
 .qsdDanger:hover {
   transform: translateY(-1px);
-  border-color: rgba(255, 80, 80, 0.42);
+  border-color: rgba(239, 68, 68, 0.24);
+  background: rgba(239, 68, 68, 0.12);
+  color: #991b1b;
 }
 
 .qsdDanger:active {
@@ -202,29 +207,24 @@
 }
 
 .qsdError {
-  margin-top: 12px;
-  padding: 12px 12px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 80, 80, 0.28);
-  background: rgba(255, 80, 80, 0.1);
-  color: rgba(255, 255, 255, 0.92);
-  font-weight: 800;
-  line-height: 1.5;
+  margin-top: 14px;
+  padding: 13px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(239, 68, 68, 0.14);
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  font-weight: 700;
+  line-height: 1.55;
   font-size: 13px;
 }
 
-/* Attempts section */
 .qsdAttempts {
-  margin-top: 14px;
-  padding: 16px;
+  margin-top: 16px;
+  padding: 18px;
   border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.03)
-  );
-  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: var(--shadow);
 }
 
 .qsdAttemptsTop {
@@ -233,23 +233,24 @@
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .qsdAttemptsTitle {
-  font-weight: 900;
-  font-size: 14px;
-  letter-spacing: 0.2px;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.15px;
+  color: var(--text);
 }
 
 .qsdAttemptsHint {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
   font-size: 12px;
 }
 
 .qsdAttemptGrid {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .qsdAttemptCard {
@@ -258,11 +259,11 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
 }
 
 .qsdAttemptLeft {
@@ -271,17 +272,17 @@
 }
 
 .qsdAttemptLabel {
-  font-weight: 900;
-  opacity: 0.92;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .qsdAttemptDate {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
   font-size: 12px;
 }
 
 .qsdAttemptRight {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--text-soft);
   font-size: 13px;
   display: grid;
   gap: 4px;
@@ -289,40 +290,42 @@
 
 .qsdAttemptScore strong,
 .qsdAttemptTime strong {
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--text);
 }
 
 .qsdEmpty {
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 14px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  padding: 16px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  box-shadow: var(--shadow-soft);
 }
 
 .qsdEmptyIcon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
   background: radial-gradient(
     circle at 30% 30%,
-    rgba(63, 61, 255, 0.55),
-    rgba(0, 194, 168, 0.18)
+    rgba(79, 70, 229, 0.42),
+    rgba(6, 182, 212, 0.16)
   );
-  box-shadow: 0 14px 28px rgba(63, 61, 255, 0.12);
+  box-shadow: 0 14px 26px rgba(79, 70, 229, 0.12);
 }
 
 .qsdEmptyTitle {
-  font-weight: 900;
+  font-weight: 800;
+  color: var(--text);
 }
 
 .qsdEmptySub {
-  margin-top: 2px;
-  color: rgba(255, 255, 255, 0.65);
+  margin-top: 3px;
+  color: var(--muted);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 @media (max-width: 640px) {

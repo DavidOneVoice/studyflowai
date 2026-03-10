@@ -6,7 +6,7 @@
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(3px);
+    filter: blur(2px);
   }
   to {
     opacity: 1;

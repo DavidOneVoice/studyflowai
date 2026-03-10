@@ -1,13 +1,6 @@
 import { getQuizMinutes } from "../../utils/quizTime";
 import "./QuizControls.css";
 
-/**
- * QuizControls lets the user configure:
- * - number of questions to generate
- * - timer mode (auto time based on question count, or custom minutes)
- *
- * State is controlled by the parent via props.
- */
 export default function QuizControls({
   questionCount,
   setQuestionCount,
@@ -22,7 +15,6 @@ export default function QuizControls({
         <div className="qcSection">
           <label className="qcLabel">Questions</label>
 
-          {/* Controls how many questions will be generated/used for the quiz */}
           <select
             className="qcSelect"
             value={questionCount}
@@ -40,7 +32,6 @@ export default function QuizControls({
           <label className="qcLabel">Timer</label>
 
           <div className="qcTimerBlock">
-            {/* Auto mode uses a helper to calculate recommended minutes per question count */}
             <label className="qcToggle">
               <input
                 type="checkbox"
@@ -53,7 +44,6 @@ export default function QuizControls({
               </span>
             </label>
 
-            {/* Custom time input is only shown when auto time is disabled */}
             {!useAutoTime && (
               <div className="qcCustomTime">
                 <input

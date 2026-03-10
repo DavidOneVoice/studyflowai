@@ -6,7 +6,7 @@
   from {
     opacity: 0;
     transform: translateY(10px);
-    filter: blur(3px);
+    filter: blur(2px);
   }
   to {
     opacity: 1;
@@ -16,57 +16,57 @@
 }
 
 .plCard {
-  padding: 18px;
+  padding: 22px;
   background:
     radial-gradient(
-      900px 420px at 12% 0%,
-      rgba(63, 61, 255, 0.18),
-      transparent 55%
-    ),
-    radial-gradient(
-      820px 380px at 88% 10%,
-      rgba(0, 194, 168, 0.12),
+      700px 300px at 8% 0%,
+      rgba(79, 70, 229, 0.08),
       transparent 60%
     ),
-    rgba(255, 255, 255, 0.03);
+    radial-gradient(
+      650px 280px at 100% 10%,
+      rgba(6, 182, 212, 0.08),
+      transparent 58%
+    ),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
 }
 
 .plHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .plBadge {
   display: inline-flex;
   align-items: center;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: 999px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.25px;
-
-  border: 1px solid rgba(63, 61, 255, 0.26);
-  background: rgba(63, 61, 255, 0.14);
-  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.18px;
+  border: 1px solid rgba(79, 70, 229, 0.14);
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-700);
 }
 
 .plTitle {
-  margin: 10px 0 8px;
-  font-size: clamp(20px, 2.3vw, 28px);
-  letter-spacing: -0.6px;
-  line-height: 1.15;
+  margin: 12px 0 8px;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: var(--text);
 }
 
 .plSub {
   margin: 0;
   color: var(--muted);
-  line-height: 1.7;
-  font-size: 14px;
-  max-width: 85ch;
+  line-height: 1.75;
+  font-size: 15px;
+  max-width: 78ch;
 }
 
 .plHeaderActions {
@@ -77,30 +77,30 @@
   justify-content: flex-end;
 }
 
-/* Buttons */
 .plGhost {
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-weight: 900;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 11px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.9);
-
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  box-shadow: var(--shadow-soft);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease,
     border 160ms ease,
-    opacity 160ms ease;
+    color 160ms ease;
 }
 
 .plGhost:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
 }
 
 .plGhost:active {
@@ -112,13 +112,13 @@
   box-shadow: var(--focus);
 }
 
-/* Tabs card */
 .plTabsCard {
   padding: 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  margin-bottom: 14px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 18px;
 }
 
 .plTabs {
@@ -128,27 +128,29 @@
 }
 
 .plTab {
-  border-radius: 14px;
-  padding: 11px 14px;
-  font-weight: 1000;
-  letter-spacing: 0.2px;
+  min-height: 46px;
+  border-radius: 16px;
+  padding: 11px 16px;
+  font-weight: 800;
+  letter-spacing: 0.1px;
   cursor: pointer;
-
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.88);
-
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
     background 160ms ease,
-    border 160ms ease;
+    border 160ms ease,
+    color 160ms ease;
 }
 
 .plTab:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #f8fafc;
+  border-color: var(--border-strong);
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
 }
 
 .plTab:active {
@@ -156,13 +158,14 @@
 }
 
 .plTab.active {
-  border-color: rgba(63, 61, 255, 0.3);
+  color: var(--primary-700);
+  border-color: rgba(79, 70, 229, 0.16);
   background: linear-gradient(
     135deg,
-    rgba(63, 61, 255, 0.16),
-    rgba(0, 194, 168, 0.1)
+    rgba(79, 70, 229, 0.12),
+    rgba(6, 182, 212, 0.08)
   );
-  box-shadow: 0 16px 30px rgba(63, 61, 255, 0.12);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.12);
 }
 
 .plTab:focus-visible {
@@ -172,30 +175,35 @@
 
 .plBody {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
-/* Toast (replaces alert) */
 .plToast {
-  margin: 10px 0 14px;
-  padding: 12px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 194, 168, 0.22);
-  background: rgba(0, 194, 168, 0.1);
-  font-weight: 1000;
-  color: rgba(255, 255, 255, 0.92);
+  margin: 12px 0 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(34, 197, 94, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.1),
+    rgba(6, 182, 212, 0.08)
+  );
+  color: #166534;
+  font-weight: 800;
+  box-shadow: var(--shadow-soft);
 }
 
 @media (max-width: 720px) {
+  .plCard {
+    padding: 18px;
+  }
+
   .plHeaderActions {
     width: 100%;
     justify-content: stretch;
   }
 
-  .plGhost {
-    width: 100%;
-  }
-
+  .plGhost,
   .plTab {
     width: 100%;
   }

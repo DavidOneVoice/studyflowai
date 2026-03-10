@@ -1,254 +1,171 @@
-import { useEffect, useRef } from "react";
-import "./PracticeMode.css";
+import { useEffect, useMemo, useState } from "react";
+import "./QuizSetupModal.css";
 
-/**
- * PracticeMode renders an interactive quiz experience:
- * - Live mode: shows questions, records chosen answers, advances through quiz
- * - Result mode: shows score + per-question review with correct answers/explanations
- *
- * The parent component owns most state; this component focuses on UI + small side-effects.
- */
-export default function PracticeMode({
-  activeSetId,
-  activeSet,
-  currentIndex,
-  selectedAnswer,
-  setSelectedAnswer,
-  attemptAnswers,
-  setAttemptAnswers,
-  score,
-  showResult,
-  onNext,
-  onExit,
-  onRetake,
-  secondsLeft,
-  onFinishAttempt,
+export default function QuizSetupModal({
+  open,
+  title = "Practice Setup",
+  setTitle = "",
+  defaultCount = 10,
+  onClose,
+  onStart,
 }) {
-  // Prevent saving/finishing the same attempt multiple times when results are shown.
-  const savedAttemptRef = useRef(false);
+  const presetCounts = useMemo(() => [5, 10, 15, 20, 30, 50, 75, 100], []);
 
-  // Tracks the "identity" of the current quiz set to reset savedAttemptRef when the set changes.
-  const lastAttemptKeyRef = useRef("");
-
-  useEffect(() => {
-    // Build a lightweight key that changes when the active quiz set changes.
-    // Includes: set id + question count + first question id (helps detect refreshed sets).
-    const key = `${activeSetId || ""}:${(activeSet?.questions || []).length}:${String(
-      activeSet?.questions?.[0]?.id || "",
-    )}`;
-
-    // If quiz set changes, allow finishing/saving again for the new attempt.
-    if (key && key !== lastAttemptKeyRef.current) {
-      lastAttemptKeyRef.current = key;
-      savedAttemptRef.current = false;
-    }
-  }, [activeSetId, activeSet]);
+  const [count, setCount] = useState(defaultCount);
+  const [useAutoTime, setUseAutoTime] = useState(true);
+  const [customMinutes, setCustomMinutes] = useState("");
 
   useEffect(() => {
-    // Only trigger finish/save once:
-    // - we have an active set
-    // - results screen is visible
-    // - we haven't already saved this attempt
-    if (!activeSetId) return;
-    if (!activeSet) return;
-    if (!showResult) return;
-    if (savedAttemptRef.current) return;
+    if (!open) return;
+    setCount(defaultCount);
+    setUseAutoTime(true);
+    setCustomMinutes("");
+  }, [open, defaultCount]);
 
-    savedAttemptRef.current = true;
-    onFinishAttempt?.();
-  }, [activeSetId, activeSet, showResult, onFinishAttempt]);
+  const autoMinutes = Math.max(1, Number(count || 1));
+  const minutes = useAutoTime
+    ? autoMinutes
+    : Math.max(1, Number(customMinutes || 1));
 
-  // Do not render practice UI unless an active quiz set exists.
-  if (!activeSetId || !activeSet) return null;
-
-  const questions = activeSet.questions || [];
-  if (!questions.length) return null;
-
-  const currentQuestion = questions[currentIndex];
-
-  /** Formats seconds as m:ss (e.g., 2:05). */
-  function formatTime(sec) {
-    const m = Math.floor(sec / 60);
-    const s = String(sec % 60).padStart(2, "0");
-    return `${m}:${s}`;
-  }
-
-  const total = questions.length;
-  const progressPct = Math.round(((currentIndex + 1) / total) * 100);
-  const isLast = currentIndex === total - 1;
-
-  // Determine the currently chosen answer:
-  // - prefer the live "selectedAnswer"
-  // - fall back to the stored attemptAnswers for this question (if any)
-  const chosen =
-    selectedAnswer ?? attemptAnswers?.[currentQuestion?.id] ?? null;
+  if (!open) return null;
 
   return (
-    <section className="pmShell">
-      <header className="pmTop">
-        <div className="pmTopLeft">
-          <div className="pmTitleRow">
-            <h3 className="pmTitle">Practice Mode</h3>
-            <span className="pmBadge">{showResult ? "Results" : "Live"}</span>
+    <div
+      className="qsmOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onClick={() => onClose?.()}
+    >
+      <div className="qsmCard" onClick={(e) => e.stopPropagation()}>
+        <header className="qsmHeader">
+          <div className="qsmHeaderLeft">
+            <div className="qsmTitle">{title}</div>
+            {setTitle ? (
+              <div className="qsmSetTitle">
+                <span className="qsmSetPill">Set</span>
+                <strong>{setTitle}</strong>
+              </div>
+            ) : null}
           </div>
 
-          <div className="pmMeta">
-            <span className="pmMetaItem">
-              Question <strong>{currentIndex + 1}</strong> / {total}
-            </span>
-            <span className="pmDot" aria-hidden="true" />
-            <span className="pmMetaItem">
-              Time left <strong>{formatTime(secondsLeft)}</strong>
-            </span>
-          </div>
-        </div>
+          <button
+            className="qsmClose"
+            type="button"
+            onClick={() => onClose?.()}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </header>
 
-        <div className="pmTopRight">
-          <div className="pmProgressWrap" aria-label="Progress">
-            <div className="pmProgressTrack">
-              <div
-                className="pmProgressFill"
-                // In results view, force progress to 100% to indicate completion.
-                style={{ width: `${showResult ? 100 : progressPct}%` }}
-              />
+        <div className="qsmBody">
+          <section className="qsmSection">
+            <div className="qsmLabelRow">
+              <div className="qsmLabel">Number of questions</div>
+              <div className="qsmMiniHint">{count} selected</div>
             </div>
-            <div className="pmProgressText">
-              {showResult ? "Completed" : `${progressPct}%`}
-            </div>
-          </div>
-        </div>
-      </header>
 
-      {!showResult ? (
-        <div className="pmBody">
-          <div className="pmQuestion">
-            <div className="pmQLabel">Question</div>
-            <div className="pmPrompt">{currentQuestion.prompt}</div>
-          </div>
-
-          <div className="pmOptions" role="list">
-            {currentQuestion.options.map((opt) => {
-              const isSelected = selectedAnswer === opt;
-
-              return (
-                <button
-                  key={opt}
-                  className={isSelected ? "pmOption selected" : "pmOption"}
-                  type="button"
-                  onClick={() => {
-                    // Update the currently selected answer (UI state).
-                    setSelectedAnswer(opt);
-
-                    // Persist the chosen answer for this question in the attempt map.
-                    setAttemptAnswers((prev) => ({
-                      ...prev,
-                      [currentQuestion.id]: opt,
-                    }));
-                  }}
-                >
-                  <span className="pmRadio" aria-hidden="true" />
-                  <span className="pmOptionText">{opt}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="pmActions">
-            <button
-              className="pmPrimary"
-              type="button"
-              onClick={() => onNext?.(chosen)}
-              // Prevent moving forward until an option is chosen.
-              disabled={!chosen}
+            <select
+              className="qsmSelect"
+              value={count}
+              onChange={(e) => setCount(Number(e.target.value))}
             >
-              {isLast ? "Finish" : "Next"}
-            </button>
+              {presetCounts.map((n) => (
+                <option key={n} value={n}>
+                  {n} questions
+                </option>
+              ))}
+            </select>
 
-            <button className="pmGhost" type="button" onClick={onExit}>
-              Exit
-            </button>
-          </div>
+            <p className="qsmNote">More questions usually need more time.</p>
+          </section>
+
+          <section className="qsmSection">
+            <div className="qsmLabelRow">
+              <div className="qsmLabel">Practice duration</div>
+              <div className="qsmMiniHint">
+                {useAutoTime
+                  ? `${autoMinutes} mins (auto)`
+                  : `${minutes} mins (custom)`}
+              </div>
+            </div>
+
+            <div className="qsmTimeModes">
+              <label className={useAutoTime ? "qsmMode active" : "qsmMode"}>
+                <input
+                  className="qsmRadio"
+                  type="radio"
+                  name="timeMode"
+                  checked={useAutoTime}
+                  onChange={() => setUseAutoTime(true)}
+                />
+                <div className="qsmModeText">
+                  <div className="qsmModeTitle">
+                    Auto (recommended){" "}
+                    <span className="qsmStrong">{autoMinutes} mins</span>
+                  </div>
+                  <div className="qsmModeSub">
+                    {count} questions → {count} mins
+                  </div>
+                </div>
+              </label>
+
+              <label className={!useAutoTime ? "qsmMode active" : "qsmMode"}>
+                <input
+                  className="qsmRadio"
+                  type="radio"
+                  name="timeMode"
+                  checked={!useAutoTime}
+                  onChange={() => setUseAutoTime(false)}
+                />
+                <div className="qsmModeText">
+                  <div className="qsmModeTitle">Custom duration</div>
+                  <div className="qsmModeSub">
+                    Choose your own timer for practice sessions
+                  </div>
+                </div>
+              </label>
+
+              {!useAutoTime && (
+                <div className="qsmCustomRow">
+                  <input
+                    className="qsmNumber"
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 120"
+                    value={customMinutes}
+                    onChange={(e) => setCustomMinutes(e.target.value)}
+                  />
+                  <div className="qsmUnit">minutes</div>
+                </div>
+              )}
+            </div>
+
+            <p className="qsmNote">Example: 100 questions for 120 mins.</p>
+          </section>
         </div>
-      ) : (
-        <div className="pmBody">
-          <div className="pmScoreCard">
-            <div className="pmScoreLeft">
-              <div className="pmScoreTitle">Your Score</div>
-              <div className="pmScoreValue">
-                {score} <span className="pmScoreTotal">/ {total}</span>
-              </div>
-              <div className="pmScoreSub">
-                Review what you missed and retake for improvement.
-              </div>
-            </div>
 
-            <div className="pmScoreBadge">
-              <div className="pmScorePct">
-                {Math.round((score / total) * 100)}%
-              </div>
-              <div className="pmScoreBadgeText">Accuracy</div>
-            </div>
-          </div>
+        <footer className="qsmActions">
+          <button className="qsmBtn" type="button" onClick={() => onClose?.()}>
+            Cancel
+          </button>
 
-          <div className="pmReview">
-            <h4 className="pmReviewTitle">Review</h4>
-
-            <div className="pmReviewGrid">
-              {questions.map((q, idx) => {
-                // User's stored answer for this question (if any).
-                const yourAns = attemptAnswers[q.id];
-                const correct = yourAns === q.answer;
-
-                return (
-                  <article
-                    key={q.id}
-                    className={correct ? "pmReviewCard ok" : "pmReviewCard bad"}
-                  >
-                    <div className="pmReviewQ">
-                      <span className="pmReviewNum">{idx + 1}</span>
-                      <span className="pmReviewPrompt">{q.prompt}</span>
-                    </div>
-
-                    <div className="pmReviewAns">
-                      <span className="pmReviewLabel">Your answer</span>
-                      <span className="pmReviewValue">
-                        {yourAns || "No answer"}{" "}
-                        <span className="pmMark">{correct ? "✅" : "❌"}</span>
-                      </span>
-                    </div>
-
-                    {/* Only show the correct answer block when the user was wrong */}
-                    {!correct && (
-                      <div className="pmReviewAns">
-                        <span className="pmReviewLabel">Correct</span>
-                        <span className="pmReviewValue strong">{q.answer}</span>
-                      </div>
-                    )}
-
-                    {/* Show explanation when provided by the question data */}
-                    {q.explanation && (
-                      <div className="pmExplain">
-                        <span className="pmReviewLabel">Explanation</span>
-                        <div className="pmExplainText">{q.explanation}</div>
-                      </div>
-                    )}
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="pmActions">
-            <button className="pmPrimary" type="button" onClick={onRetake}>
-              Retake Quiz
-            </button>
-
-            <button className="pmGhost" type="button" onClick={onExit}>
-              Exit
-            </button>
-          </div>
-        </div>
-      )}
-    </section>
+          <button
+            className="qsmBtn qsmPrimary"
+            type="button"
+            onClick={() =>
+              onStart?.({
+                count,
+                minutes,
+                mode: useAutoTime ? "auto" : "custom",
+              })
+            }
+          >
+            Start Practice
+          </button>
+        </footer>
+      </div>
+    </div>
   );
 }

@@ -1,14 +1,6 @@
 import { useState } from "react";
 import "./QuizBuilderForm.css";
 
-/**
- * QuizBuilderForm allows users to create a quiz set by:
- * - Entering a title
- * - (Optionally) linking the set to an existing course
- * - Uploading course material (PDF/DOCX/TXT) OR pasting text directly
- *
- * All core form values are controlled by the parent via props.
- */
 export default function QuizBuilderForm({
   title,
   setTitle,
@@ -18,19 +10,17 @@ export default function QuizBuilderForm({
   error,
   onFileUpload,
   onSave,
-
   courses = [],
   selectedCourseId = "",
   setSelectedCourseId = () => {},
 }) {
-  // Used only to style the upload area while dragging a file over it.
   const [isDragging, setIsDragging] = useState(false);
 
   return (
     <section className="qbCard">
       <header className="qbHeader">
         <div className="qbHeaderTop">
-          <div className="qbBadge">Quiz Builder</div>
+          <div className="qbBadge">Practice</div>
           <div className="qbBadges">
             <span className="qbChip">PDF</span>
             <span className="qbChip">DOCX</span>
@@ -40,15 +30,15 @@ export default function QuizBuilderForm({
 
         <h2 className="qbTitle">Turn your notes into practice questions.</h2>
         <p className="qbSub">
-          Upload your course material and save it as a quiz set. When you click
-          “Take Quiz”, CramLess generates high-quality MCQs from your material.
+          Upload your material, save it, and generate practice questions with
+          StudyFlow AI whenever you’re ready to test yourself.
         </p>
       </header>
 
       <div className="qbBody">
         <div className="qbGrid">
           <div className="qbField">
-            <label className="qbLabel">Set title</label>
+            <label className="qbLabel">Practice set title</label>
             <input
               className="qbInput"
               value={title}
@@ -57,10 +47,9 @@ export default function QuizBuilderForm({
             />
           </div>
 
-          {/* Only show course linking when courses exist */}
           {courses.length > 0 && (
             <div className="qbField">
-              <label className="qbLabel">Link to Course (optional)</label>
+              <label className="qbLabel">Link to subject (optional)</label>
               <select
                 className="qbSelect"
                 value={selectedCourseId}
@@ -74,27 +63,24 @@ export default function QuizBuilderForm({
                 ))}
               </select>
               <p className="qbHelp">
-                Linking helps you launch quizzes directly from the Study
-                Planner.
+                Linking makes it easier to launch practice directly from your
+                study plan.
               </p>
             </div>
           )}
         </div>
 
         <div className="qbField">
-          <label className="qbLabel">Upload course material</label>
+          <label className="qbLabel">Upload material</label>
 
-          {/* Drag-and-drop upload zone (also supports click-to-browse) */}
           <div
             className={`qbUpload ${isDragging ? "dragging" : ""}`}
             onDragOver={(e) => {
-              // Needed to allow dropping in the browser.
               e.preventDefault();
               setIsDragging(true);
             }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={(e) => {
-              // Convert dropped files into a shape compatible with the existing onFileUpload handler.
               e.preventDefault();
               setIsDragging(false);
               onFileUpload?.({ target: { files: e.dataTransfer.files } });
@@ -103,7 +89,6 @@ export default function QuizBuilderForm({
             <input
               className="qbFile"
               type="file"
-              // Restrict accepted file types to supported formats.
               accept=".pdf,.docx,.txt"
               onChange={onFileUpload}
             />
@@ -118,7 +103,6 @@ export default function QuizBuilderForm({
             </div>
           </div>
 
-          {/* Displays the currently selected file name/info */}
           {fileInfo && (
             <div className="qbFileInfo">
               <span className="qbFileTag">Selected</span>
@@ -128,26 +112,24 @@ export default function QuizBuilderForm({
         </div>
 
         <div className="qbField">
-          <label className="qbLabel">Or paste course material</label>
+          <label className="qbLabel">Or paste material</label>
           <textarea
             className="qbTextarea"
             value={sourceText}
             onChange={(e) => setSourceText(e.target.value)}
-            placeholder="Paste notes, slides text, textbook excerpt, etc..."
+            placeholder="Paste notes, slides, textbook excerpts, handouts, or any learning material..."
             rows={10}
           />
-          {/* Character counter helps users understand input size */}
           <div className="qbCounter">
             {Math.min(sourceText?.length || 0, 999999).toLocaleString()} chars
           </div>
         </div>
 
-        {/* Surface validation or upload errors from parent */}
         {error && <div className="qbError">{error}</div>}
 
         <div className="qbActions">
           <button className="qbPrimary" type="button" onClick={onSave}>
-            Save Document
+            Save Practice Set
           </button>
         </div>
       </div>

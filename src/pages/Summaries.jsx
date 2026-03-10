@@ -3,10 +3,6 @@ import { loadState } from "../lib/storage";
 import CloseIcon from "@mui/icons-material/Close";
 import "./Summaries.css";
 
-/**
- * Reads `setId` from the hash query string.
- * Example: #/summaries?setId=abc123
- */
 function getSetIdFromHash() {
   const raw = window.location.hash || "";
   const qIndex = raw.indexOf("?");
@@ -16,43 +12,23 @@ function getSetIdFromHash() {
   return params.get("setId") || "";
 }
 
-/**
- * Summaries page:
- * - Lists all quiz sets that have a generated summary
- * - Allows viewing a summary in a modal
- * - Allows copying summaries to clipboard
- *
- * Note: Summaries are stored locally in this browser (localStorage state).
- */
 export default function Summaries() {
   const [state, setState] = useState(() => loadState());
-
-  // Which summary is currently opened in the modal (quiz set id).
   const [openSetId, setOpenSetId] = useState("");
-
-  // Used to show a short "Copied ✅" UI state for a specific set id.
   const [copiedId, setCopiedId] = useState("");
 
-  /**
-   * Sync state whenever the hash changes.
-   * Also auto-opens the summary if a setId is present in the URL.
-   */
   useEffect(() => {
     function syncFromStorage() {
       setState(loadState());
-
       const id = getSetIdFromHash();
       if (id) setOpenSetId(id);
     }
 
-    syncFromStorage(); // run on mount
+    syncFromStorage();
     window.addEventListener("hashchange", syncFromStorage);
     return () => window.removeEventListener("hashchange", syncFromStorage);
   }, []);
 
-  /**
-   * Auto-hide the "Copied" UI flag after a short delay.
-   */
   useEffect(() => {
     if (!copiedId) return;
     const t = setTimeout(() => setCopiedId(""), 1400);
@@ -61,10 +37,6 @@ export default function Summaries() {
 
   const quizSets = useMemo(() => state.quizSets || [], [state.quizSets]);
 
-  /**
-   * Only show sets that have a non-empty summary.
-   * Sort newest-first by createdAt (string ISO comparison).
-   */
   const summarizedSets = useMemo(() => {
     return quizSets
       .filter(
@@ -75,9 +47,6 @@ export default function Summaries() {
       );
   }, [quizSets]);
 
-  /**
-   * The set currently opened in the modal (if any).
-   */
   const openSet = useMemo(() => {
     return summarizedSets.find((s) => s.id === openSetId) || null;
   }, [summarizedSets, openSetId]);
@@ -87,10 +56,11 @@ export default function Summaries() {
       <section className="sumCard card">
         <header className="sumHeader">
           <div>
-            <div className="sumBadge">Summaries</div>
-            <h2 className="sumTitle">Your AI Study Notes</h2>
+            <div className="sumBadge">AI Notes</div>
+            <h2 className="sumTitle">Your saved AI notes</h2>
             <p className="sumSub">
-              All generated summaries are saved locally in this browser.
+              All generated notes are saved locally in this browser for quick
+              revision anytime.
             </p>
           </div>
 
@@ -98,21 +68,20 @@ export default function Summaries() {
             <button
               className="sumGhost"
               type="button"
-              onClick={() => (window.location.hash = "#/quiz")}
+              onClick={() => (window.location.hash = "#/practice")}
             >
-              Back to Quiz Builder
+              Back to Practice
             </button>
           </div>
         </header>
 
         {summarizedSets.length === 0 ? (
-          // Empty state when no summaries exist.
           <div className="sumEmpty">
             <div className="sumEmptyIcon" aria-hidden="true" />
             <div>
-              <div className="sumEmptyTitle">No summaries yet</div>
+              <div className="sumEmptyTitle">No AI notes yet</div>
               <div className="sumEmptySub">
-                Go to Quiz Builder and click “Generate Summary”.
+                Open a practice set and generate AI notes from your material.
               </div>
             </div>
           </div>
@@ -126,7 +95,7 @@ export default function Summaries() {
                 </div>
 
                 <div className="sumHint">
-                  Clean, structured notes from your uploaded material.
+                  Clean, readable notes generated from your learning material.
                 </div>
 
                 <div className="sumItemActions">
@@ -135,7 +104,7 @@ export default function Summaries() {
                     type="button"
                     onClick={() => setOpenSetId(s.id)}
                   >
-                    View Summary
+                    View Notes
                   </button>
 
                   <button
@@ -146,8 +115,6 @@ export default function Summaries() {
                         await navigator.clipboard.writeText(s.summary || "");
                         setCopiedId(s.id);
                       } catch {
-                        // Clipboard can fail (permissions, unsupported browser, etc.).
-                        // Keep UI calm and still show the copied feedback.
                         setCopiedId(s.id);
                       }
                     }}
@@ -165,20 +132,19 @@ export default function Summaries() {
         )}
       </section>
 
-      {/* Summary viewer modal */}
       {openSet && (
         <div
           className="sumOverlay"
           role="dialog"
           aria-modal="true"
-          aria-label="Summary viewer"
+          aria-label="AI notes viewer"
           onClick={() => setOpenSetId("")}
         >
           <div className="sumModal" onClick={(e) => e.stopPropagation()}>
             <header className="sumModalHeader">
               <div>
                 <div className="sumModalTitle">{openSet.title}</div>
-                <div className="sumModalSub">Summary</div>
+                <div className="sumModalSub">AI Notes</div>
               </div>
 
               <div className="sumModalActions">
@@ -209,13 +175,11 @@ export default function Summaries() {
               </div>
             </header>
 
-            {/* Toast shown only when the opened set was copied */}
             {copiedId === openSet.id && (
               <div className="sumToast">Copied ✅</div>
             )}
 
             <div className="sumModalBody">
-              {/* Render as plain text (no HTML injection) */}
               <div className="sumText">{openSet.summary}</div>
             </div>
           </div>
