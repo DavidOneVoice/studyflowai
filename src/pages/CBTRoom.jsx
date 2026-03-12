@@ -189,13 +189,6 @@ export default function CBTRoom() {
         return null;
       }
 
-      if (questions.length !== count) {
-        setError(
-          `Only ${questions.length} question${questions.length === 1 ? "" : "s"} could be generated for this material. Reduce the question count or upload more material.`,
-        );
-        return null;
-      }
-
       setState((prev) => ({
         ...prev,
         quizSets: (prev.quizSets || []).map((set) => {
@@ -214,7 +207,12 @@ export default function CBTRoom() {
         }),
       }));
 
-      setError("");
+      if (data.warning) {
+        setError(data.warning);
+      } else {
+        setError("");
+      }
+
       return questions;
     } catch (err) {
       console.error(err);
@@ -243,7 +241,7 @@ export default function CBTRoom() {
 
     (async () => {
       const questions = await generateWithAI(setId, count);
-      if (!questions || questions.length !== count) return;
+      if (!questions || !questions.length) return;
 
       start(durationMins * 60);
       startPractice(setId);
@@ -258,14 +256,11 @@ export default function CBTRoom() {
     const count = getIntParam("count", 10);
     const durationMins = getIntParam("mins", count);
 
-    setGenerating(true);
     setError("Generating new practice questions…");
 
     const questions = await generateWithAI(activeSetId, count);
 
-    setGenerating(false);
-
-    if (!questions || questions.length !== count) return;
+    if (!questions || !questions.length) return;
 
     setError("");
     start(durationMins * 60);
