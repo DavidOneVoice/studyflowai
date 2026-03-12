@@ -250,7 +250,7 @@ app.post("/api/generate-mcqs", async (req, res) => {
     const requestedCount = Number(count) || 10;
     const safeCount = Math.max(5, Math.min(requestedCount, 100));
 
-    const maxAttempts = Math.min(20, Math.max(8, Math.ceil(safeCount / 8)));
+    const maxAttempts = 8;
 
     const safeAvoid = Array.isArray(avoid)
       ? avoid
@@ -283,8 +283,6 @@ app.post("/api/generate-mcqs", async (req, res) => {
       const remaining = Math.max(safeCount - finalQuestions.length, 0);
       const attemptPoolCount = Math.min(Math.max(remaining * 2, 16), 40);
       const avoidForAttempt = [...safeAvoid, ...generatedPrompts.slice(-200)];
-      const attemptSliceIndex = attempt % usableSlices.length;
-      const attemptMaterial = usableSlices[attemptSliceIndex];
 
       const prompt = `
 You are an expert exam setter and tutor.
@@ -385,9 +383,7 @@ ${attemptMaterial}
       const selected = selectDiverseQuestions(mergedPool, safeAvoid, safeCount);
       finalQuestions = selected;
       generatedPrompts.push(...pool.map((q) => q.prompt));
-      if (generatedPrompts.length > 500) {
-        generatedPrompts.splice(0, generatedPrompts.length - 500);
-      }
+      if (generatedPrompts.length > 500) generatedPrompts.splice(0, generatedPrompts.length - 500);
 
       if (finalQuestions.length >= safeCount) {
         finalQuestions = finalQuestions.slice(0, safeCount);
