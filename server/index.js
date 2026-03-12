@@ -223,7 +223,8 @@ app.post("/api/generate-mcqs", async (req, res) => {
       nonce,
     } = req.body;
 
-    if (!sourceText || normalizeText(sourceText).length < 80) {
+    const normalizedSource = normalizeText(sourceText);
+    if (!normalizedSource || normalizedSource.length < 80) {
       return res
         .status(400)
         .json({ error: "Please provide more study material text." });
@@ -252,8 +253,16 @@ app.post("/api/generate-mcqs", async (req, res) => {
     const safeAvoid = Array.isArray(avoid)
       ? avoid
           .filter((x) => typeof x === "string" && x.trim().length > 0)
-          .slice(0, 80)
+          .slice(0, 120)
       : [];
+
+    const baseNonce =
+      typeof nonce === "string" && nonce.trim().length > 0
+        ? nonce.trim()
+        : crypto.randomUUID();
+
+    const perAttemptTarget = Math.min(15, Math.max(8, Math.ceil(safeCount / 8)));
+    const maxAttempts = Math.min(36, Math.max(10, safeCount * 2));
 
     console.log("MCQ request:", {
       title,
@@ -261,16 +270,13 @@ app.post("/api/generate-mcqs", async (req, res) => {
       safeCount,
       maxAttempts,
       avoidCount: safeAvoid.length,
+      materialChars: normalizedSource.length,
+      usedSlices: usableSlices.length,
       truncatedMaterial: truncated,
       materialChars: normalizedSource.length,
       usedSlices: usableSlices.length,
       sliceChars: MAX_MCQ_SLICE_CHARS,
     });
-
-    const baseNonce =
-      typeof nonce === "string" && nonce.trim().length > 0
-        ? nonce.trim()
-        : crypto.randomUUID();
 
     let finalQuestions = [];
     const generatedPrompts = [];
@@ -312,7 +318,6 @@ Requirements:
 Variation nonce: ${attemptNonce}
 
 Output MUST be valid JSON ONLY in this exact structure:
-
 {
   "questions": [
     {
@@ -539,7 +544,7 @@ app.post("/api/generate-mcqs", async (req, res) => {
     }
 
     return res.json({
-      questions: finalQuestions,
+      questions: finalQuestions.slice(0, safeCount),
       meta: {
         requestedCount: safeCount,
         returnedCount: finalQuestions.length,
