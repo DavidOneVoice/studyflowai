@@ -79,9 +79,9 @@ export default function Summaries() {
           <div className="sumEmpty">
             <div className="sumEmptyIcon" aria-hidden="true" />
             <div>
-              <div className="sumEmptyTitle">No AI notes yet</div>
+              <div className="sumEmptyTitle">No Summaries generated yet</div>
               <div className="sumEmptySub">
-                Open a practice set and generate AI notes from your material.
+                Open a practice set and generate a Summary from your material.
               </div>
             </div>
           </div>
