@@ -273,7 +273,25 @@ Generate ${count} high-quality multiple-choice questions from the study material
 
 IMPORTANT:
 - Use ONLY the study material provided below.
-- Focus on THIS CHUNK only.
+- Focus on the actual learning content, concepts, principles, methods, examples, formulas, explanations, and skills being taught.
+- DO NOT generate questions about document metadata or administrative/course-manual details unless the material is specifically about those details.
+- Avoid questions about:
+  - course code
+  - course title
+  - department name
+  - lecturer/instructor/facilitator name
+  - school/faculty/platform name
+  - module number alone
+  - table of contents
+  - grading policy
+  - submission instructions
+  - class rules
+  - discussion forum instructions
+  - attendance rules
+  - assignment deadlines
+  - general course logistics
+- Only include such administrative/logistics questions if the user material is mainly about policies or procedures.
+- Prefer questions that test understanding of the subject matter itself.
 - Questions must be varied and not repetitive.
 - Avoid reusing or paraphrasing these previous question prompts:
 ${avoid.length ? `- ${avoid.join("\n- ")}` : "- (none)"}
@@ -281,11 +299,14 @@ ${avoid.length ? `- ${avoid.join("\n- ")}` : "- (none)"}
 Requirements:
 - Difficulty: ${difficulty}
 - Each question must be clear, complete, and based strictly on the material.
+- Prioritize concept understanding over document trivia.
+- Ask about ideas, definitions, applications, reasoning, steps, methods, formulas, interpretations, and worked examples where relevant.
 - 4 options only.
 - Exactly 1 correct answer.
 - Provide a short explanation.
-- Return as many valid questions as you can up to ${count}.
-- JSON only.
+- Do not use broken fragments.
+- Do not ask shallow “who teaches this course?” or “which module contains...” questions unless that is the core subject being studied.
+- Return valid JSON only.
 
 Output format:
 {
