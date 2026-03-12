@@ -121,7 +121,7 @@ export default function App() {
             </span>
           </button>
 
-          <p className="subtitle">Plan, learn, and practice with AI.</p>
+          <p className="subtitle">Plan, learn and practice with AI.</p>
         </div>
 
         <button
