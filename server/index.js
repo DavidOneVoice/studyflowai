@@ -201,9 +201,9 @@ function selectDiverseQuestions(pool, avoidList, finalCount) {
   for (const q of pool) {
     if (selected.length >= finalCount) break;
 
-    if (avoidList.length && isTooSimilar(q.prompt, avoidList, 0.45)) continue;
+    if (avoidList.length && isTooSimilar(q.prompt, avoidList, 0.65)) continue;
 
-    if (chosenPrompts.length && isTooSimilar(q.prompt, chosenPrompts, 0.55))
+    if (chosenPrompts.length && isTooSimilar(q.prompt, chosenPrompts, 0.75))
       continue;
 
     selected.push(q);
@@ -226,61 +226,81 @@ app.post("/api/generate-mcqs", async (req, res) => {
       nonce,
     } = req.body;
 
-    if (!sourceText || normalizeText(sourceText).length < 80) {
+    const normalizedSource = normalizeText(sourceText);
+    if (!normalizedSource || normalizedSource.length < 80) {
       return res
         .status(400)
         .json({ error: "Please provide more study material text." });
     }
 
-    const MAX_MCQ_SOURCE_CHARS = 35000;
-    const { text: safeMaterial, truncated } = capTextEvenly(
-      sourceText,
-      MAX_MCQ_SOURCE_CHARS,
-    );
-
     const requestedCount = Number(count) || 10;
     const safeCount = Math.max(5, Math.min(requestedCount, 100));
 
-    const poolCount = Math.min(Math.max(safeCount * 5, safeCount + 10), 220);
+    const MAX_MCQ_SLICE_CHARS = 10000;
+    const MAX_MCQ_SLICES = 20;
+    const slices = splitIntoChunks(normalizedSource, MAX_MCQ_SLICE_CHARS).slice(
+      0,
+      MAX_MCQ_SLICES,
+    );
+
+    const { text: fallbackMaterial, truncated: fallbackTruncated } = capTextEvenly(
+      normalizedSource,
+      35000,
+    );
+
+    const usableSlices = slices.length ? slices : [fallbackMaterial];
+    const truncated = fallbackTruncated || usableSlices.length >= MAX_MCQ_SLICES;
 
     const safeAvoid = Array.isArray(avoid)
       ? avoid
           .filter((x) => typeof x === "string" && x.trim().length > 0)
-          .slice(0, 80)
+          .slice(0, 120)
       : [];
-
-    console.log("MCQ request:", {
-      title,
-      requestedCount,
-      safeCount,
-      poolCount,
-      avoidCount: safeAvoid.length,
-      truncatedMaterial: truncated,
-      materialChars: normalizeText(sourceText).length,
-      usedChars: safeMaterial.length,
-    });
 
     const baseNonce =
       typeof nonce === "string" && nonce.trim().length > 0
         ? nonce.trim()
         : crypto.randomUUID();
 
-    let finalQuestions = [];
+    const perAttemptTarget = Math.min(15, Math.max(8, Math.ceil(safeCount / 8)));
+    const maxAttempts = Math.min(36, Math.max(10, safeCount * 2));
 
-    for (let attempt = 0; attempt < 4; attempt++) {
+    console.log("MCQ request:", {
+      title,
+      requestedCount,
+      safeCount,
+      perAttemptTarget,
+      maxAttempts,
+      avoidCount: safeAvoid.length,
+      materialChars: normalizedSource.length,
+      usedSlices: usableSlices.length,
+      truncatedMaterial: truncated,
+    });
+
+    let finalQuestions = [];
+    const generatedPrompts = [];
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const remaining = safeCount - finalQuestions.length;
+      if (remaining <= 0) break;
+
       const attemptNonce = attempt === 0 ? baseNonce : crypto.randomUUID();
+      const sliceIndex = attempt % usableSlices.length;
+      const attemptMaterial = usableSlices[sliceIndex];
+
+      const avoidForAttempt = [...safeAvoid, ...generatedPrompts.slice(-120)];
+      const attemptPoolCount = Math.min(remaining + 6, perAttemptTarget);
 
       const prompt = `
 You are an expert exam setter and tutor.
 
-Create ${poolCount} high-quality multiple-choice questions (MCQs) from the study material below.
+Create exactly ${attemptPoolCount} high-quality multiple-choice questions (MCQs) from the study material below.
 
 VERY IMPORTANT:
-- The final goal is to produce at least ${safeCount} UNIQUE usable questions.
-- Generate a wide variety of questions. Do not repeat the same obvious ideas.
-- Spread questions across the material as much as possible.
+- The final goal is to produce at least ${safeCount} UNIQUE usable questions across multiple attempts.
+- Focus on different ideas each time and avoid repeating concepts already covered.
 - Avoid reusing or paraphrasing these previous question prompts:
-${safeAvoid.length ? `- ${safeAvoid.join("\n- ")}` : "- (none)"}
+${avoidForAttempt.length ? `- ${avoidForAttempt.join("\n- ")}` : "- (none)"}
 
 Requirements:
 - Difficulty: ${difficulty} (easy/medium/hard/mixed)
@@ -290,17 +310,10 @@ Requirements:
 - Provide a short explanation for why it's correct.
 - Use natural language. No broken fragments.
 - Avoid duplicates and near-duplicates.
-- Mix:
-  - definitions
-  - conceptual understanding
-  - application/scenario
-  - misconception checks
-  - calculations (if relevant)
 
 Variation nonce: ${attemptNonce}
 
 Output MUST be valid JSON ONLY in this exact structure:
-
 {
   "questions": [
     {
@@ -313,20 +326,26 @@ Output MUST be valid JSON ONLY in this exact structure:
 }
 
 Title: ${title || "Untitled"}
-Study Material:
-${safeMaterial}
-`;
+Study Material (slice ${sliceIndex + 1} of ${usableSlices.length}):
+${attemptMaterial}
+`.trim();
 
-      const resp = await client.chat.completions.create({
-        model: "gpt-4.1-mini",
-        temperature: 1.0,
-        presence_penalty: 0.9,
-        frequency_penalty: 0.5,
-        response_format: { type: "json_object" },
-        messages: [{ role: "user", content: prompt }],
-      });
-
-      const rawText = resp.choices?.[0]?.message?.content || "{}";
+      let rawText = "{}";
+      try {
+        const resp = await client.chat.completions.create({
+          model: "gpt-4.1-mini",
+          temperature: 0.8,
+          presence_penalty: 0.7,
+          frequency_penalty: 0.4,
+          response_format: { type: "json_object" },
+          max_tokens: Math.min(3500, Math.max(1200, attemptPoolCount * 240)),
+          messages: [{ role: "user", content: prompt }],
+        });
+        rawText = resp.choices?.[0]?.message?.content || "{}";
+      } catch (e) {
+        console.warn("MCQ attempt failed:", e?.message || e);
+        continue;
+      }
 
       let data;
       try {
@@ -336,7 +355,6 @@ ${safeMaterial}
       }
 
       const rawQs = Array.isArray(data.questions) ? data.questions : [];
-
       const pool = rawQs
         .map((q) => {
           const opts = Array.isArray(q.options) ? q.options : [];
@@ -364,11 +382,12 @@ ${safeMaterial}
 
       if (!pool.length) continue;
 
-      const selected = selectDiverseQuestions(pool, safeAvoid, safeCount);
+      const mergedPool = [...finalQuestions, ...pool];
+      finalQuestions = selectDiverseQuestions(mergedPool, safeAvoid, safeCount);
 
-      if (selected.length >= safeCount) {
-        finalQuestions = selected.slice(0, safeCount);
-        break;
+      generatedPrompts.push(...pool.map((q) => q.prompt));
+      if (generatedPrompts.length > 600) {
+        generatedPrompts.splice(0, generatedPrompts.length - 600);
       }
     }
 
@@ -381,11 +400,12 @@ ${safeMaterial}
     }
 
     return res.json({
-      questions: finalQuestions,
+      questions: finalQuestions.slice(0, safeCount),
       meta: {
         truncatedMaterial: truncated,
         requestedCount: safeCount,
         returnedCount: finalQuestions.length,
+        usedSlices: usableSlices.length,
       },
     });
   } catch (err) {
