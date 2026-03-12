@@ -8,11 +8,6 @@ import crypto from "crypto";
 
 const app = express();
 
-/**
- * CORS configuration:
- * - If FRONTEND_ORIGIN is provided (comma-separated), only those origins are allowed.
- * - Otherwise, allow all origins (useful during local/dev; review for production).
- */
 app.use(
   cors({
     origin: process.env.FRONTEND_ORIGIN
@@ -21,48 +16,27 @@ app.use(
   }),
 );
 
-// Keep this small-ish so uploads don’t crash memory, but enough for typical text
 app.use(express.json({ limit: "4mb" }));
 
-/**
- * Lightweight request logging for debugging and monitoring.
- * (Consider using a structured logger in production.)
- */
 app.use((req, res, next) => {
   console.log("INCOMING:", req.method, req.url);
   next();
 });
 
-/** Simple health check endpoint for uptime monitoring. */
 app.get("/health", (req, res) => res.json({ ok: true }));
 
-/**
- * OpenAI client setup.
- * Requires OPENAI_API_KEY in environment variables.
- */
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-/* -------------------- text safety helpers -------------------- */
+/* -------------------- shared helpers -------------------- */
 
-/** Normalizes text by collapsing whitespace and trimming edges. */
 function normalizeText(s = "") {
   return String(s).replace(/\s+/g, " ").trim();
 }
 
-/**
- * Caps large text but keeps coverage:
- * - head (start)
- * - middle slice
- * - tail (end)
- *
- * Still useful for some tasks, but MCQ generation below now uses true chunking,
- * not this sampling approach.
- */
 function capTextEvenly(text, maxChars) {
   const t = normalizeText(text);
   if (t.length <= maxChars) return { text: t, truncated: false };
 
-  // 40% head, 20% middle, 40% tail
   const headLen = Math.floor(maxChars * 0.4);
   const midLen = Math.floor(maxChars * 0.2);
   const tailLen = maxChars - headLen - midLen;
@@ -89,10 +63,6 @@ function capTextEvenly(text, maxChars) {
   return { text: joined, truncated: true };
 }
 
-/**
- * Splits text into fixed-size chunks for multi-step summarization.
- * Chunking helps avoid context-length errors on large inputs.
- */
 function splitIntoChunks(text, chunkChars = 12000) {
   const t = normalizeText(text);
   if (!t) return [];
@@ -103,15 +73,8 @@ function splitIntoChunks(text, chunkChars = 12000) {
   return chunks;
 }
 
-/**
- * Converts OpenAI/SDK errors into user-friendly API responses:
- * - 413 for payload/context-size issues
- * - 429 for rate limits
- * - falls back to server error status/message
- */
 function friendlyOpenAIError(err) {
   const msg = err?.error?.message || err?.message || "OpenAI request failed";
-
   const lower = String(msg).toLowerCase();
 
   if (
@@ -144,17 +107,15 @@ function friendlyOpenAIError(err) {
     };
   }
 
-  return { status: err?.status || 500, error: msg, detail: msg };
+  return {
+    status: err?.status || 500,
+    error: msg,
+    detail: msg,
+  };
 }
 
 /* -------------------- diversity helpers -------------------- */
 
-/**
- * Tokenizes text for similarity checks:
- * - lowercase
- * - remove punctuation
- * - keep words of length >= 3
- */
 function tokenize(s) {
   return String(s || "")
     .toLowerCase()
@@ -163,35 +124,24 @@ function tokenize(s) {
     .filter((w) => w.length >= 3);
 }
 
-/**
- * Jaccard similarity over token sets.
- * Used to reduce repeated or near-duplicate question prompts.
- */
 function jaccard(a, b) {
   const A = new Set(tokenize(a));
   const B = new Set(tokenize(b));
   if (!A.size || !B.size) return 0;
 
   let inter = 0;
-  for (const x of A) if (B.has(x)) inter++;
+  for (const x of A) {
+    if (B.has(x)) inter++;
+  }
 
   const union = A.size + B.size - inter;
   return union ? inter / union : 0;
 }
 
-/**
- * Returns true if `prompt` is too similar to any item in `list`
- * using the provided similarity threshold.
- */
 function isTooSimilar(prompt, list, threshold) {
   return list.some((old) => jaccard(prompt, old) >= threshold);
 }
 
-/**
- * Selects a diverse subset of questions:
- * - avoids prompts similar to previously asked prompts (avoidList)
- * - avoids duplicates within the new selection (chosenPrompts)
- */
 function selectDiverseQuestions(pool, avoidList, finalCount) {
   const selected = [];
   const chosenPrompts = [];
@@ -200,8 +150,9 @@ function selectDiverseQuestions(pool, avoidList, finalCount) {
     if (selected.length >= finalCount) break;
 
     if (avoidList.length && isTooSimilar(q.prompt, avoidList, 0.45)) continue;
-    if (chosenPrompts.length && isTooSimilar(q.prompt, chosenPrompts, 0.55))
+    if (chosenPrompts.length && isTooSimilar(q.prompt, chosenPrompts, 0.55)) {
       continue;
+    }
 
     selected.push(q);
     chosenPrompts.push(q.prompt);
@@ -210,114 +161,133 @@ function selectDiverseQuestions(pool, avoidList, finalCount) {
   return selected;
 }
 
-/* -------------------- MCQ-specific chunking helpers -------------------- */
+function normalizePromptKey(prompt = "") {
+  return String(prompt)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
-app.post("/api/generate-mcqs", async (req, res) => {
-  try {
-    const {
-      title,
-      sourceText,
-      count = 10,
-      difficulty = "mixed",
-      avoid = [],
-      nonce,
-    } = req.body;
+function dedupeQuestionPool(questions) {
+  const seen = new Set();
+  const out = [];
 
-    const normalizedSource = normalizeText(sourceText);
-    if (!normalizedSource || normalizedSource.length < 80) {
-      return res
-        .status(400)
-        .json({ error: "Please provide more study material text." });
+  for (const q of questions) {
+    const key = normalizePromptKey(q.prompt);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(q);
+  }
+
+  return out;
+}
+
+/* -------------------- MCQ helpers -------------------- */
+
+function splitIntoQuestionChunks(text, chunkChars = 9000, overlapChars = 800) {
+  const t = normalizeText(text);
+  if (!t) return [];
+
+  const chunks = [];
+  let start = 0;
+
+  while (start < t.length) {
+    const end = Math.min(start + chunkChars, t.length);
+    const chunk = t.slice(start, end).trim();
+
+    if (chunk.length >= 300) {
+      chunks.push(chunk);
     }
 
-    const normalizedSource = normalizeText(sourceText);
-    const MAX_MCQ_SLICE_CHARS = 12000;
-    const MAX_MCQ_SLICES = 12;
+    if (end >= t.length) break;
+    start = Math.max(end - overlapChars, start + 1);
+  }
 
-    const allSlices = splitIntoChunks(normalizedSource, MAX_MCQ_SLICE_CHARS);
-    const materialSlices = allSlices.slice(0, MAX_MCQ_SLICES);
+  return chunks;
+}
 
-    const { text: fallbackMaterial, truncated: fallbackTruncated } = capTextEvenly(
-      normalizedSource,
-      35000,
-    );
+function allocateQuestionsAcrossChunks(chunks, requestedCount) {
+  if (!chunks.length || requestedCount <= 0) return [];
 
-    const usableSlices = materialSlices.length ? materialSlices : [fallbackMaterial];
-    const truncated = fallbackTruncated || allSlices.length > MAX_MCQ_SLICES;
+  const lengths = chunks.map((c) => c.length);
+  const totalLength = lengths.reduce((sum, n) => sum + n, 0);
 
-    const requestedCount = Number(count) || 10;
-    const safeCount = Math.max(5, Math.min(requestedCount, 100));
+  const allocations = lengths.map((len) =>
+    Math.max(1, Math.floor((len / totalLength) * requestedCount)),
+  );
 
-    const maxAttempts = 8;
+  let assigned = allocations.reduce((sum, n) => sum + n, 0);
 
-    const safeAvoid = Array.isArray(avoid)
-      ? avoid
-          .filter((x) => typeof x === "string" && x.trim().length > 0)
-          .slice(0, 120)
-      : [];
+  while (assigned < requestedCount) {
+    let bestIndex = 0;
+    let bestScore = -Infinity;
 
-    const baseNonce =
-      typeof nonce === "string" && nonce.trim().length > 0
-        ? nonce.trim()
-        : crypto.randomUUID();
+    for (let i = 0; i < chunks.length; i++) {
+      const score = lengths[i] / (allocations[i] + 1);
+      if (score > bestScore) {
+        bestScore = score;
+        bestIndex = i;
+      }
+    }
 
-    const perAttemptTarget = Math.min(15, Math.max(8, Math.ceil(safeCount / 8)));
-    const maxAttempts = Math.min(36, Math.max(10, safeCount * 2));
+    allocations[bestIndex] += 1;
+    assigned += 1;
+  }
 
-    console.log("MCQ request:", {
-      title,
-      requestedCount,
-      safeCount,
-      maxAttempts,
-      avoidCount: safeAvoid.length,
-      materialChars: normalizedSource.length,
-      usedSlices: usableSlices.length,
-      truncatedMaterial: truncated,
-      materialChars: normalizedSource.length,
-      usedSlices: usableSlices.length,
-      sliceChars: MAX_MCQ_SLICE_CHARS,
-    });
+  while (assigned > requestedCount) {
+    let bestIndex = -1;
+    let smallestAllocation = Infinity;
 
-    let finalQuestions = [];
-    const generatedPrompts = [];
+    for (let i = 0; i < allocations.length; i++) {
+      if (allocations[i] > 1 && allocations[i] < smallestAllocation) {
+        smallestAllocation = allocations[i];
+        bestIndex = i;
+      }
+    }
 
-    for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      const attemptNonce = attempt === 0 ? baseNonce : crypto.randomUUID();
-      const remaining = Math.max(safeCount - finalQuestions.length, 0);
-      const attemptPoolCount = Math.min(Math.max(remaining * 2, 16), 40);
-      const avoidForAttempt = [...safeAvoid, ...generatedPrompts.slice(-200)];
+    if (bestIndex === -1) break;
+
+    allocations[bestIndex] -= 1;
+    assigned -= 1;
+  }
+
+  return allocations;
+}
+
+async function generateQuestionsForChunk({
+  title,
+  chunkText,
+  count,
+  difficulty,
+  avoid = [],
+  chunkIndex = 0,
+  totalChunks = 1,
+}) {
+  const attemptNonce = crypto.randomUUID();
 
   const prompt = `
 You are an expert exam setter and tutor.
 
-Generate EXACTLY ${count} high-quality multiple-choice questions from the study material below.
+Generate ${count} high-quality multiple-choice questions from the study material below.
 
 IMPORTANT:
-- Return EXACTLY ${count} questions.
 - Use ONLY the study material provided below.
-- Focus on THIS CHUNK only, but spread coverage across the chunk as much as possible.
+- Focus on THIS CHUNK only.
 - Questions must be varied and not repetitive.
 - Avoid reusing or paraphrasing these previous question prompts:
 ${avoid.length ? `- ${avoid.join("\n- ")}` : "- (none)"}
 
 Requirements:
-- Difficulty: ${difficulty} (easy/medium/hard/mixed)
+- Difficulty: ${difficulty}
 - Each question must be clear, complete, and based strictly on the material.
 - 4 options only.
 - Exactly 1 correct answer.
-- Provide a short explanation for why it is correct.
-- Use natural language.
-- Avoid duplicates and near-duplicates.
-- Mix question styles where relevant:
-  - definitions
-  - conceptual understanding
-  - application/scenario
-  - misconception checks
-  - calculations
+- Provide a short explanation.
+- Return as many valid questions as you can up to ${count}.
+- JSON only.
 
-Variation nonce: ${attemptNonce}
-
-Output MUST be valid JSON ONLY in this exact structure:
+Output format:
 {
   "questions": [
     {
@@ -334,20 +304,17 @@ Chunk: ${chunkIndex + 1} of ${totalChunks}
 
 Study Material:
 ${chunkText}
-`.trim();
-Study Material (slice ${attemptSliceIndex + 1} of ${usableSlices.length}):
-${attemptMaterial}
-`;
 
-      const resp = await client.chat.completions.create({
-        model: "gpt-4.1-mini",
-        temperature: 1.0,
-        presence_penalty: 0.9,
-        frequency_penalty: 0.5,
-        response_format: { type: "json_object" },
-        max_tokens: Math.min(12000, Math.max(2500, attemptPoolCount * 220)),
-        messages: [{ role: "user", content: prompt }],
-      });
+Variation nonce: ${attemptNonce}
+`.trim();
+
+  const resp = await client.chat.completions.create({
+    model: "gpt-4.1-mini",
+    temperature: 0.7,
+    response_format: { type: "json_object" },
+    max_tokens: 3500,
+    messages: [{ role: "user", content: prompt }],
+  });
 
   const rawText = resp.choices?.[0]?.message?.content || "{}";
 
@@ -390,6 +357,7 @@ ${attemptMaterial}
 /* -------------------- API: generate MCQs -------------------- */
 
 app.post("/api/generate-mcqs", async (req, res) => {
+  console.log("=== HIT /api/generate-mcqs ON CURRENT SERVER ===");
   try {
     const {
       title,
@@ -399,7 +367,9 @@ app.post("/api/generate-mcqs", async (req, res) => {
       avoid = [],
     } = req.body;
 
-    if (!sourceText || normalizeText(sourceText).length < 80) {
+    const material = normalizeText(sourceText);
+
+    if (!material || material.length < 80) {
       return res
         .status(400)
         .json({ error: "Please provide more study material text." });
@@ -411,13 +381,11 @@ app.post("/api/generate-mcqs", async (req, res) => {
     const safeAvoid = Array.isArray(avoid)
       ? avoid
           .filter((x) => typeof x === "string" && x.trim().length > 0)
-          .slice(0, 120)
+          .slice(0, 20)
       : [];
 
-    const material = normalizeText(sourceText);
-
-    const QUESTION_CHUNK_CHARS = 9000;
-    const QUESTION_CHUNK_OVERLAP = 800;
+    const QUESTION_CHUNK_CHARS = 6000;
+    const QUESTION_CHUNK_OVERLAP = 500;
 
     const chunks = splitIntoQuestionChunks(
       material,
@@ -431,110 +399,71 @@ app.post("/api/generate-mcqs", async (req, res) => {
       });
     }
 
-    const allocations = allocateQuestionsAcrossChunks(chunks, safeCount);
-
     console.log("MCQ request:", {
       title,
       requestedCount,
       safeCount,
       materialChars: material.length,
       chunkCount: chunks.length,
-      allocations,
       avoidCount: safeAvoid.length,
     });
 
     let finalQuestions = [];
     let generatedPrompts = [];
 
-    // First pass: generate across all chunks
-    for (let i = 0; i < chunks.length; i++) {
-      const chunkText = chunks[i];
-      const chunkTarget = allocations[i];
+    // Do several rounds across chunks, small batches each time
+    for (let round = 0; round < 4; round++) {
+      if (finalQuestions.length >= safeCount) break;
 
-      if (chunkTarget <= 0) continue;
-
-      const attemptCount = Math.min(Math.max(chunkTarget + 2, 8), 24);
-
-      try {
-        const chunkQuestions = await generateQuestionsForChunk({
-          title,
-          chunkText,
-          count: attemptCount,
-          difficulty,
-          avoid: [...safeAvoid, ...generatedPrompts.slice(-200)],
-          chunkIndex: i,
-          totalChunks: chunks.length,
-        });
-
-        generatedPrompts.push(...chunkQuestions.map((q) => q.prompt));
-        if (generatedPrompts.length > 500) {
-          generatedPrompts.splice(0, generatedPrompts.length - 500);
-        }
-
-        finalQuestions = dedupeQuestionPool([
-          ...finalQuestions,
-          ...chunkQuestions,
-        ]);
-      } catch (err) {
-        console.error(`MCQ chunk ${i + 1}/${chunks.length} failed`, err);
-      }
-    }
-
-    // Second pass: refill if still short
-    let remaining = safeCount - finalQuestions.length;
-
-    if (remaining > 0) {
-      const retryOrder = chunks
-        .map((chunk, index) => ({ chunk, index, len: chunk.length }))
-        .sort((a, b) => b.len - a.len);
-
-      for (const item of retryOrder) {
+      for (let i = 0; i < chunks.length; i++) {
         if (finalQuestions.length >= safeCount) break;
 
-        remaining = safeCount - finalQuestions.length;
-        const refillCount = Math.min(Math.max(remaining * 2, 6), 20);
+        const remaining = safeCount - finalQuestions.length;
+        const batchSize = Math.min(5, Math.max(3, remaining));
 
         try {
-          const extraQuestions = await generateQuestionsForChunk({
+          const chunkQuestions = await generateQuestionsForChunk({
             title,
-            chunkText: item.chunk,
-            count: refillCount,
+            chunkText: chunks[i],
+            count: batchSize,
             difficulty,
             avoid: [
               ...safeAvoid,
-              ...finalQuestions.map((q) => q.prompt),
-              ...generatedPrompts.slice(-200),
+              ...generatedPrompts.slice(-60),
+              ...finalQuestions.map((q) => q.prompt).slice(-60),
             ],
-            chunkIndex: item.index,
+            chunkIndex: i,
             totalChunks: chunks.length,
           });
 
-          generatedPrompts.push(...extraQuestions.map((q) => q.prompt));
-          if (generatedPrompts.length > 500) {
-            generatedPrompts.splice(0, generatedPrompts.length - 500);
+          console.log(
+            `Round ${round + 1}, chunk ${i + 1}/${chunks.length}, got ${chunkQuestions.length} questions`,
+          );
+
+          generatedPrompts.push(...chunkQuestions.map((q) => q.prompt));
+          if (generatedPrompts.length > 200) {
+            generatedPrompts.splice(0, generatedPrompts.length - 200);
           }
 
           finalQuestions = dedupeQuestionPool([
             ...finalQuestions,
-            ...extraQuestions,
+            ...chunkQuestions,
           ]);
         } catch (err) {
           console.error(
-            `MCQ refill chunk ${item.index + 1}/${chunks.length} failed`,
+            `MCQ round ${round + 1} chunk ${i + 1}/${chunks.length} failed`,
             err,
           );
         }
       }
     }
 
-    // Final cleanup + trim
     finalQuestions = dedupeQuestionPool(finalQuestions);
     finalQuestions = selectDiverseQuestions(
       finalQuestions,
       safeAvoid,
       safeCount,
-    );
-    finalQuestions = finalQuestions.slice(0, safeCount);
+    ).slice(0, safeCount);
 
     if (!finalQuestions.length) {
       return res.status(422).json({
@@ -544,7 +473,7 @@ app.post("/api/generate-mcqs", async (req, res) => {
     }
 
     return res.json({
-      questions: finalQuestions.slice(0, safeCount),
+      questions: finalQuestions,
       meta: {
         requestedCount: safeCount,
         returnedCount: finalQuestions.length,
@@ -564,14 +493,8 @@ app.post("/api/generate-mcqs", async (req, res) => {
   }
 });
 
-/* -------------------- API: summarize (with chunking) -------------------- */
+/* -------------------- API: summarize -------------------- */
 
-/**
- * Summarization prompt notes:
- * Goal = "content compression", not "document description".
- * We explicitly forbid meta narration (e.g., "This document discusses...").
- * Output is general-purpose: works for academic, religious, health, policy, etc.
- */
 function buildSummaryPrompt({ title, material, partLabel }) {
   const safeTitle = title || "Untitled";
 
@@ -592,6 +515,7 @@ Write the summary as clear notes with these sections:
 3) Important Terms / Definitions (only if they appear in the material)
 4) Requirements / Rules / Logistics (only if present: grading, deadlines, policies, instructions, etc.)
 5) Practical Takeaways (2–8 bullets: what the reader should do/remember)
+
 Optional:
 - If the material clearly looks like a course handout (mentions exam, quiz, grading, assignments), add:
   "Likely Exam Focus"
@@ -609,10 +533,6 @@ ${material}
 `.trim();
 }
 
-/**
- * Summarizes a single chunk of the study material.
- * Used when the input is too large for a single request.
- */
 async function summarizeChunk({ title, chunkText, index, total }) {
   const prompt = buildSummaryPrompt({
     title,
@@ -629,10 +549,6 @@ async function summarizeChunk({ title, chunkText, index, total }) {
   return r.choices?.[0]?.message?.content || "";
 }
 
-/**
- * Combines multiple partial summaries into one consolidated summary.
- * This step reduces duplication and improves readability.
- */
 async function combineSummaries({ title, partials }) {
   const safeTitle = title || "Untitled";
 
@@ -679,7 +595,6 @@ app.post("/api/summarize", async (req, res) => {
     }
 
     const material = normalizeText(sourceText);
-
     const MAX_SINGLEPASS_CHARS = 28000;
     const CHUNK_CHARS = 12000;
 
@@ -731,7 +646,6 @@ app.post("/api/summarize", async (req, res) => {
   }
 });
 
-// Port can be configured via environment variables for deployment platforms.
 const PORT = process.env.PORT || 5050;
 
 app.listen(PORT, () => {

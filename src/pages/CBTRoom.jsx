@@ -138,6 +138,11 @@ export default function CBTRoom() {
       setGenerating(true);
       setError("");
 
+      console.log("QUIZ sourceText length:", target.sourceText?.length || 0);
+      console.log("Requested count:", count);
+      console.log("API_BASE:", API_BASE);
+      console.log("MCQ endpoint:", `${API_BASE}/api/generate-mcqs`);
+
       const r = await fetch(`${API_BASE}/api/generate-mcqs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,10 +152,9 @@ export default function CBTRoom() {
           count,
           difficulty: "mixed",
           nonce: crypto.randomUUID(),
-          avoid: (target.promptHistory || target.questions || [])
-            .map((q) => (typeof q === "string" ? q : q.prompt))
-            .filter(Boolean)
-            .slice(0, 60),
+
+          // temporary test
+          avoid: [],
         }),
       });
 
