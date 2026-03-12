@@ -232,11 +232,20 @@ app.post("/api/generate-mcqs", async (req, res) => {
         .json({ error: "Please provide more study material text." });
     }
 
-    const MAX_MCQ_SOURCE_CHARS = 35000;
-    const { text: safeMaterial, truncated } = capTextEvenly(
-      sourceText,
-      MAX_MCQ_SOURCE_CHARS,
+    const normalizedSource = normalizeText(sourceText);
+    const MAX_MCQ_SLICE_CHARS = 12000;
+    const MAX_MCQ_SLICES = 12;
+
+    const allSlices = splitIntoChunks(normalizedSource, MAX_MCQ_SLICE_CHARS);
+    const materialSlices = allSlices.slice(0, MAX_MCQ_SLICES);
+
+    const { text: fallbackMaterial, truncated: fallbackTruncated } = capTextEvenly(
+      normalizedSource,
+      35000,
     );
+
+    const usableSlices = materialSlices.length ? materialSlices : [fallbackMaterial];
+    const truncated = fallbackTruncated || allSlices.length > MAX_MCQ_SLICES;
 
     const requestedCount = Number(count) || 10;
     const safeCount = Math.max(5, Math.min(requestedCount, 100));
@@ -256,8 +265,9 @@ app.post("/api/generate-mcqs", async (req, res) => {
       maxAttempts,
       avoidCount: safeAvoid.length,
       truncatedMaterial: truncated,
-      materialChars: normalizeText(sourceText).length,
-      usedChars: safeMaterial.length,
+      materialChars: normalizedSource.length,
+      usedSlices: usableSlices.length,
+      sliceChars: MAX_MCQ_SLICE_CHARS,
     });
 
     const baseNonce =
@@ -317,8 +327,8 @@ Output MUST be valid JSON ONLY in this exact structure:
 }
 
 Title: ${title || "Untitled"}
-Study Material:
-${safeMaterial}
+Study Material (slice ${attemptSliceIndex + 1} of ${usableSlices.length}):
+${attemptMaterial}
 `;
 
       const resp = await client.chat.completions.create({
@@ -327,6 +337,7 @@ ${safeMaterial}
         presence_penalty: 0.9,
         frequency_penalty: 0.5,
         response_format: { type: "json_object" },
+        max_tokens: Math.min(12000, Math.max(2500, attemptPoolCount * 220)),
         messages: [{ role: "user", content: prompt }],
       });
 
