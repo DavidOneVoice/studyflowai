@@ -232,16 +232,25 @@ app.post("/api/generate-mcqs", async (req, res) => {
         .json({ error: "Please provide more study material text." });
     }
 
-    const MAX_MCQ_SOURCE_CHARS = 35000;
-    const { text: safeMaterial, truncated } = capTextEvenly(
-      sourceText,
-      MAX_MCQ_SOURCE_CHARS,
+    const normalizedSource = normalizeText(sourceText);
+    const MAX_MCQ_SLICE_CHARS = 12000;
+    const MAX_MCQ_SLICES = 12;
+
+    const allSlices = splitIntoChunks(normalizedSource, MAX_MCQ_SLICE_CHARS);
+    const materialSlices = allSlices.slice(0, MAX_MCQ_SLICES);
+
+    const { text: fallbackMaterial, truncated: fallbackTruncated } = capTextEvenly(
+      normalizedSource,
+      35000,
     );
+
+    const usableSlices = materialSlices.length ? materialSlices : [fallbackMaterial];
+    const truncated = fallbackTruncated || allSlices.length > MAX_MCQ_SLICES;
 
     const requestedCount = Number(count) || 10;
     const safeCount = Math.max(5, Math.min(requestedCount, 100));
 
-    const poolCount = Math.min(Math.max(safeCount * 5, safeCount + 10), 220);
+    const maxAttempts = Math.min(20, Math.max(8, Math.ceil(safeCount / 8)));
 
     const safeAvoid = Array.isArray(avoid)
       ? avoid
@@ -253,11 +262,12 @@ app.post("/api/generate-mcqs", async (req, res) => {
       title,
       requestedCount,
       safeCount,
-      poolCount,
+      maxAttempts,
       avoidCount: safeAvoid.length,
       truncatedMaterial: truncated,
-      materialChars: normalizeText(sourceText).length,
-      usedChars: safeMaterial.length,
+      materialChars: normalizedSource.length,
+      usedSlices: usableSlices.length,
+      sliceChars: MAX_MCQ_SLICE_CHARS,
     });
 
     const baseNonce =
@@ -266,21 +276,27 @@ app.post("/api/generate-mcqs", async (req, res) => {
         : crypto.randomUUID();
 
     let finalQuestions = [];
+    const generatedPrompts = [];
 
-    for (let attempt = 0; attempt < 4; attempt++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const attemptNonce = attempt === 0 ? baseNonce : crypto.randomUUID();
+      const remaining = Math.max(safeCount - finalQuestions.length, 0);
+      const attemptPoolCount = Math.min(Math.max(remaining * 2, 16), 40);
+      const avoidForAttempt = [...safeAvoid, ...generatedPrompts.slice(-200)];
+      const attemptSliceIndex = attempt % usableSlices.length;
+      const attemptMaterial = usableSlices[attemptSliceIndex];
 
       const prompt = `
 You are an expert exam setter and tutor.
 
-Create ${poolCount} high-quality multiple-choice questions (MCQs) from the study material below.
+Create ${attemptPoolCount} high-quality multiple-choice questions (MCQs) from the study material below.
 
 VERY IMPORTANT:
 - The final goal is to produce at least ${safeCount} UNIQUE usable questions.
 - Generate a wide variety of questions. Do not repeat the same obvious ideas.
 - Spread questions across the material as much as possible.
 - Avoid reusing or paraphrasing these previous question prompts:
-${safeAvoid.length ? `- ${safeAvoid.join("\n- ")}` : "- (none)"}
+${avoidForAttempt.length ? `- ${avoidForAttempt.join("\n- ")}` : "- (none)"}
 
 Requirements:
 - Difficulty: ${difficulty} (easy/medium/hard/mixed)
@@ -313,8 +329,8 @@ Output MUST be valid JSON ONLY in this exact structure:
 }
 
 Title: ${title || "Untitled"}
-Study Material:
-${safeMaterial}
+Study Material (slice ${attemptSliceIndex + 1} of ${usableSlices.length}):
+${attemptMaterial}
 `;
 
       const resp = await client.chat.completions.create({
@@ -323,6 +339,7 @@ ${safeMaterial}
         presence_penalty: 0.9,
         frequency_penalty: 0.5,
         response_format: { type: "json_object" },
+        max_tokens: Math.min(12000, Math.max(2500, attemptPoolCount * 220)),
         messages: [{ role: "user", content: prompt }],
       });
 
@@ -364,10 +381,16 @@ ${safeMaterial}
 
       if (!pool.length) continue;
 
-      const selected = selectDiverseQuestions(pool, safeAvoid, safeCount);
+      const mergedPool = [...finalQuestions, ...pool];
+      const selected = selectDiverseQuestions(mergedPool, safeAvoid, safeCount);
+      finalQuestions = selected;
+      generatedPrompts.push(...pool.map((q) => q.prompt));
+      if (generatedPrompts.length > 500) {
+        generatedPrompts.splice(0, generatedPrompts.length - 500);
+      }
 
-      if (selected.length >= safeCount) {
-        finalQuestions = selected.slice(0, safeCount);
+      if (finalQuestions.length >= safeCount) {
+        finalQuestions = finalQuestions.slice(0, safeCount);
         break;
       }
     }
