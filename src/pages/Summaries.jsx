@@ -68,9 +68,9 @@ export default function Summaries() {
             <button
               className="sumGhost"
               type="button"
-              onClick={() => (window.location.hash = "#/practice")}
+              onClick={() => (window.location.hash = "#/library")}
             >
-              Back to Practice
+              Back to Library
             </button>
           </div>
         </header>

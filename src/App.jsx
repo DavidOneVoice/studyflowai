@@ -166,7 +166,7 @@ export default function App() {
             onClick={() => go("notes")}
             type="button"
           >
-            AI Notes
+            Summarize Notes
           </button>
 
           <button

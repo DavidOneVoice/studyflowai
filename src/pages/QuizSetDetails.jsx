@@ -79,7 +79,7 @@ export default function QuizSetDetails() {
       }
 
       if (!r.ok) {
-        setError(data.error || "AI notes generation failed.");
+        setError(data.error || "Summary generation failed.");
         return;
       }
 
@@ -104,7 +104,7 @@ export default function QuizSetDetails() {
         return nextState;
       });
     } catch (e) {
-      setError(e?.message || "AI notes generation failed.");
+      setError(e?.message || "Summary generation failed.");
     } finally {
       setBusy(false);
     }
@@ -178,7 +178,7 @@ export default function QuizSetDetails() {
               </span>
 
               <span className={set.summary ? "qsdPill ok2" : "qsdPill"}>
-                {set.summary ? "AI notes ready" : "No AI notes yet"}
+                {set.summary ? "Summary ready" : "No Summary yet"}
               </span>
 
               <span className="qsdPill">
@@ -218,10 +218,10 @@ export default function QuizSetDetails() {
               disabled={busy}
             >
               {busy
-                ? "Working..."
+                ? "Generating Summary..."
                 : set.summary
-                  ? "View AI Notes"
-                  : "Generate AI Notes"}
+                  ? "View Summary"
+                  : "Generate Summary"}
             </button>
 
             {attempts.length > 0 && (

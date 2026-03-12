@@ -41,6 +41,7 @@
   box-shadow: 0 30px 90px rgba(15, 23, 42, 0.14);
   transform-origin: center;
   animation: qsmPop 220ms ease both;
+  margin-top: 3rem;
 }
 
 @keyframes qsmPop {
