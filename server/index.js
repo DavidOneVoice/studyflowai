@@ -241,7 +241,7 @@ app.post("/api/generate-mcqs", async (req, res) => {
     const requestedCount = Number(count) || 10;
     const safeCount = Math.max(5, Math.min(requestedCount, 100));
 
-    const poolCount = Math.min(Math.max(safeCount * 5, safeCount + 10), 220);
+    const maxAttempts = 8;
 
     const safeAvoid = Array.isArray(avoid)
       ? avoid
@@ -253,7 +253,7 @@ app.post("/api/generate-mcqs", async (req, res) => {
       title,
       requestedCount,
       safeCount,
-      poolCount,
+      maxAttempts,
       avoidCount: safeAvoid.length,
       truncatedMaterial: truncated,
       materialChars: normalizeText(sourceText).length,
@@ -266,21 +266,25 @@ app.post("/api/generate-mcqs", async (req, res) => {
         : crypto.randomUUID();
 
     let finalQuestions = [];
+    const generatedPrompts = [];
 
-    for (let attempt = 0; attempt < 4; attempt++) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
       const attemptNonce = attempt === 0 ? baseNonce : crypto.randomUUID();
+      const remaining = Math.max(safeCount - finalQuestions.length, 0);
+      const attemptPoolCount = Math.min(Math.max(remaining * 2, 16), 40);
+      const avoidForAttempt = [...safeAvoid, ...generatedPrompts.slice(-200)];
 
       const prompt = `
 You are an expert exam setter and tutor.
 
-Create ${poolCount} high-quality multiple-choice questions (MCQs) from the study material below.
+Create ${attemptPoolCount} high-quality multiple-choice questions (MCQs) from the study material below.
 
 VERY IMPORTANT:
 - The final goal is to produce at least ${safeCount} UNIQUE usable questions.
 - Generate a wide variety of questions. Do not repeat the same obvious ideas.
 - Spread questions across the material as much as possible.
 - Avoid reusing or paraphrasing these previous question prompts:
-${safeAvoid.length ? `- ${safeAvoid.join("\n- ")}` : "- (none)"}
+${avoidForAttempt.length ? `- ${avoidForAttempt.join("\n- ")}` : "- (none)"}
 
 Requirements:
 - Difficulty: ${difficulty} (easy/medium/hard/mixed)
@@ -364,10 +368,14 @@ ${safeMaterial}
 
       if (!pool.length) continue;
 
-      const selected = selectDiverseQuestions(pool, safeAvoid, safeCount);
+      const mergedPool = [...finalQuestions, ...pool];
+      const selected = selectDiverseQuestions(mergedPool, safeAvoid, safeCount);
+      finalQuestions = selected;
+      generatedPrompts.push(...pool.map((q) => q.prompt));
+      if (generatedPrompts.length > 500) generatedPrompts.splice(0, generatedPrompts.length - 500);
 
-      if (selected.length >= safeCount) {
-        finalQuestions = selected.slice(0, safeCount);
+      if (finalQuestions.length >= safeCount) {
+        finalQuestions = finalQuestions.slice(0, safeCount);
         break;
       }
     }
