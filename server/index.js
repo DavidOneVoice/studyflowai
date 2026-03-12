@@ -212,120 +212,74 @@ function selectDiverseQuestions(pool, avoidList, finalCount) {
 
 /* -------------------- MCQ-specific chunking helpers -------------------- */
 
-/**
- * Splits full study text into overlapping chunks for question generation.
- * Overlap helps avoid losing continuity between chunk boundaries.
- */
-function splitIntoQuestionChunks(text, chunkChars = 9000, overlapChars = 800) {
-  const t = normalizeText(text);
-  if (!t) return [];
+app.post("/api/generate-mcqs", async (req, res) => {
+  try {
+    const {
+      title,
+      sourceText,
+      count = 10,
+      difficulty = "mixed",
+      avoid = [],
+      nonce,
+    } = req.body;
 
-  const chunks = [];
-  let start = 0;
-
-  while (start < t.length) {
-    const end = Math.min(start + chunkChars, t.length);
-    const chunk = t.slice(start, end).trim();
-
-    if (chunk.length >= 300) {
-      chunks.push(chunk);
+    if (!sourceText || normalizeText(sourceText).length < 80) {
+      return res
+        .status(400)
+        .json({ error: "Please provide more study material text." });
     }
 
-    if (end >= t.length) break;
-    start = Math.max(end - overlapChars, start + 1);
-  }
+    const normalizedSource = normalizeText(sourceText);
+    const MAX_MCQ_SLICE_CHARS = 12000;
+    const MAX_MCQ_SLICES = 12;
 
-  return chunks;
-}
+    const allSlices = splitIntoChunks(normalizedSource, MAX_MCQ_SLICE_CHARS);
+    const materialSlices = allSlices.slice(0, MAX_MCQ_SLICES);
 
-/**
- * Distributes requested question count across chunks proportionally
- * based on chunk size, while ensuring each chunk can contribute.
- */
-function allocateQuestionsAcrossChunks(chunks, requestedCount) {
-  if (!chunks.length || requestedCount <= 0) return [];
+    const { text: fallbackMaterial, truncated: fallbackTruncated } = capTextEvenly(
+      normalizedSource,
+      35000,
+    );
 
-  const lengths = chunks.map((c) => c.length);
-  const totalLength = lengths.reduce((sum, n) => sum + n, 0);
+    const usableSlices = materialSlices.length ? materialSlices : [fallbackMaterial];
+    const truncated = fallbackTruncated || allSlices.length > MAX_MCQ_SLICES;
 
-  const allocations = lengths.map((len) =>
-    Math.max(1, Math.floor((len / totalLength) * requestedCount)),
-  );
+    const requestedCount = Number(count) || 10;
+    const safeCount = Math.max(5, Math.min(requestedCount, 100));
 
-  let assigned = allocations.reduce((sum, n) => sum + n, 0);
+    const maxAttempts = 8;
 
-  while (assigned < requestedCount) {
-    let bestIndex = 0;
-    let bestScore = -Infinity;
+    const safeAvoid = Array.isArray(avoid)
+      ? avoid
+          .filter((x) => typeof x === "string" && x.trim().length > 0)
+          .slice(0, 80)
+      : [];
 
-    for (let i = 0; i < chunks.length; i++) {
-      const score = lengths[i] / (allocations[i] + 1);
-      if (score > bestScore) {
-        bestScore = score;
-        bestIndex = i;
-      }
-    }
+    console.log("MCQ request:", {
+      title,
+      requestedCount,
+      safeCount,
+      maxAttempts,
+      avoidCount: safeAvoid.length,
+      truncatedMaterial: truncated,
+      materialChars: normalizedSource.length,
+      usedSlices: usableSlices.length,
+      sliceChars: MAX_MCQ_SLICE_CHARS,
+    });
 
-    allocations[bestIndex] += 1;
-    assigned += 1;
-  }
+    const baseNonce =
+      typeof nonce === "string" && nonce.trim().length > 0
+        ? nonce.trim()
+        : crypto.randomUUID();
 
-  while (assigned > requestedCount) {
-    let bestIndex = -1;
-    let smallestAllocation = Infinity;
+    let finalQuestions = [];
+    const generatedPrompts = [];
 
-    for (let i = 0; i < allocations.length; i++) {
-      if (allocations[i] > 1 && allocations[i] < smallestAllocation) {
-        smallestAllocation = allocations[i];
-        bestIndex = i;
-      }
-    }
-
-    if (bestIndex === -1) break;
-
-    allocations[bestIndex] -= 1;
-    assigned -= 1;
-  }
-
-  return allocations;
-}
-
-function normalizePromptKey(prompt = "") {
-  return String(prompt)
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function dedupeQuestionPool(questions) {
-  const seen = new Set();
-  const out = [];
-
-  for (const q of questions) {
-    const key = normalizePromptKey(q.prompt);
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    out.push(q);
-  }
-
-  return out;
-}
-
-/**
- * Generates a batch of questions from one chunk only.
- * This keeps quiz generation scalable for large study materials.
- */
-async function generateQuestionsForChunk({
-  title,
-  chunkText,
-  count,
-  difficulty,
-  avoid = [],
-  chunkIndex = 0,
-  totalChunks = 1,
-}) {
-  const attemptNonce = crypto.randomUUID();
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const attemptNonce = attempt === 0 ? baseNonce : crypto.randomUUID();
+      const remaining = Math.max(safeCount - finalQuestions.length, 0);
+      const attemptPoolCount = Math.min(Math.max(remaining * 2, 16), 40);
+      const avoidForAttempt = [...safeAvoid, ...generatedPrompts.slice(-200)];
 
   const prompt = `
 You are an expert exam setter and tutor.
@@ -376,15 +330,19 @@ Chunk: ${chunkIndex + 1} of ${totalChunks}
 Study Material:
 ${chunkText}
 `.trim();
+Study Material (slice ${attemptSliceIndex + 1} of ${usableSlices.length}):
+${attemptMaterial}
+`;
 
-  const resp = await client.chat.completions.create({
-    model: "gpt-4.1-mini",
-    temperature: 0.8,
-    presence_penalty: 0.6,
-    frequency_penalty: 0.4,
-    response_format: { type: "json_object" },
-    messages: [{ role: "user", content: prompt }],
-  });
+      const resp = await client.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 1.0,
+        presence_penalty: 0.9,
+        frequency_penalty: 0.5,
+        response_format: { type: "json_object" },
+        max_tokens: Math.min(12000, Math.max(2500, attemptPoolCount * 220)),
+        messages: [{ role: "user", content: prompt }],
+      });
 
   const rawText = resp.choices?.[0]?.message?.content || "{}";
 
