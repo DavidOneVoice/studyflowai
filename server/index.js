@@ -66,10 +66,12 @@ function capTextEvenly(text, maxChars) {
 function splitIntoChunks(text, chunkChars = 12000) {
   const t = normalizeText(text);
   if (!t) return [];
+
   const chunks = [];
   for (let i = 0; i < t.length; i += chunkChars) {
     chunks.push(t.slice(i, i + chunkChars));
   }
+
   return chunks;
 }
 
@@ -185,7 +187,7 @@ function dedupeQuestionPool(questions) {
 
 /* -------------------- MCQ helpers -------------------- */
 
-function splitIntoQuestionChunks(text, chunkChars = 9000, overlapChars = 800) {
+function splitIntoQuestionChunks(text, chunkChars = 6000, overlapChars = 500) {
   const t = normalizeText(text);
   if (!t) return [];
 
@@ -207,52 +209,92 @@ function splitIntoQuestionChunks(text, chunkChars = 9000, overlapChars = 800) {
   return chunks;
 }
 
-function allocateQuestionsAcrossChunks(chunks, requestedCount) {
-  if (!chunks.length || requestedCount <= 0) return [];
+function isAdministrativeChunk(text = "") {
+  const t = text.toLowerCase();
 
-  const lengths = chunks.map((c) => c.length);
-  const totalLength = lengths.reduce((sum, n) => sum + n, 0);
+  const adminSignals = [
+    "course manual",
+    "course outline",
+    "course code",
+    "facilitator",
+    "instructor",
+    "lecturer",
+    "department of",
+    "grading",
+    "marks",
+    "discussion forum",
+    "assignment submission",
+    "academic honesty",
+    "attendance",
+    "deadline",
+    "learning outcomes",
+    "general instructions",
+    "student responsibilities",
+    "final exam",
+    "continuous assessment",
+    "point value",
+    "table of contents",
+  ];
 
-  const allocations = lengths.map((len) =>
-    Math.max(1, Math.floor((len / totalLength) * requestedCount)),
+  let hits = 0;
+  for (const signal of adminSignals) {
+    if (t.includes(signal)) hits++;
+  }
+
+  return hits >= 3;
+}
+
+function isAdministrativeQuestion(prompt = "", explanation = "") {
+  const p = `${prompt} ${explanation}`.toLowerCase();
+
+  const badPatterns = [
+    "course manual",
+    "according to the course manual",
+    "which module",
+    "which unit",
+    "module covers",
+    "unit covers",
+    "department",
+    "lecturer",
+    "instructor",
+    "facilitator",
+    "platform",
+    "discussion forum",
+    "group discussion",
+    "assignment",
+    "submission",
+    "deadline",
+    "grading",
+    "marks",
+    "point value",
+    "final exam combined",
+    "academic honesty",
+    "attendance",
+    "learning outcome",
+    "learning outcomes",
+    "course title",
+    "course code",
+    "outlined in the",
+    "listed as a learning outcome",
+    "not listed as a learning outcome",
+  ];
+
+  return badPatterns.some((pattern) => p.includes(pattern));
+}
+
+function isWeakMetaQuestion(prompt = "") {
+  const p = prompt.toLowerCase().trim();
+
+  return p.startsWith("which module") || p.startsWith("which unit");
+}
+
+function filterOutAdministrativeQuestions(questions = []) {
+  return questions.filter(
+    (q) =>
+      q &&
+      !isAdministrativeQuestion(q.prompt, q.explanation) &&
+      !isWeakMetaQuestion(q.prompt),
   );
-
-  let assigned = allocations.reduce((sum, n) => sum + n, 0);
-
-  while (assigned < requestedCount) {
-    let bestIndex = 0;
-    let bestScore = -Infinity;
-
-    for (let i = 0; i < chunks.length; i++) {
-      const score = lengths[i] / (allocations[i] + 1);
-      if (score > bestScore) {
-        bestScore = score;
-        bestIndex = i;
-      }
-    }
-
-    allocations[bestIndex] += 1;
-    assigned += 1;
-  }
-
-  while (assigned > requestedCount) {
-    let bestIndex = -1;
-    let smallestAllocation = Infinity;
-
-    for (let i = 0; i < allocations.length; i++) {
-      if (allocations[i] > 1 && allocations[i] < smallestAllocation) {
-        smallestAllocation = allocations[i];
-        bestIndex = i;
-      }
-    }
-
-    if (bestIndex === -1) break;
-
-    allocations[bestIndex] -= 1;
-    assigned -= 1;
-  }
-
-  return allocations;
 }
 
 async function generateQuestionsForChunk({
@@ -273,39 +315,27 @@ Generate ${count} high-quality multiple-choice questions from the study material
 
 IMPORTANT:
 - Use ONLY the study material provided below.
-- Focus on the actual learning content, concepts, principles, methods, examples, formulas, explanations, and skills being taught.
-- DO NOT generate questions about document metadata or administrative/course-manual details unless the material is specifically about those details.
-- Avoid questions about:
-  - course code
-  - course title
-  - department name
-  - lecturer/instructor/facilitator name
-  - school/faculty/platform name
-  - module number alone
-  - table of contents
-  - grading policy
-  - submission instructions
-  - class rules
-  - discussion forum instructions
-  - attendance rules
-  - assignment deadlines
-  - general course logistics
-- Only include such administrative/logistics questions if the user material is mainly about policies or procedures.
-- Prefer questions that test understanding of the subject matter itself.
-- Questions must be varied and not repetitive.
-- Avoid reusing or paraphrasing these previous question prompts:
+- Focus on the actual subject matter being taught.
+- Prioritize concepts, explanations, principles, definitions, methods, formulas, applications, reasoning, and practical understanding.
+- DO NOT generate questions about course manual structure, lecturer advice, grading policy, assignment rules, discussion rules, attendance, deadlines, module numbering, point allocation, or other administrative details.
+- DO NOT ask questions about the document itself.
+- DO NOT ask “which module/unit covers...” style questions.
+- DO NOT ask “according to the course manual...” style questions.
+- If the material contains both real subject content and administrative material, ignore the administrative material and generate questions only from the real subject content.
+- Questions must feel like actual test/practice questions on the topic, not questions about the handout.
+
+Avoid reusing or paraphrasing these previous question prompts:
 ${avoid.length ? `- ${avoid.join("\n- ")}` : "- (none)"}
 
 Requirements:
 - Difficulty: ${difficulty}
 - Each question must be clear, complete, and based strictly on the material.
 - Prioritize concept understanding over document trivia.
-- Ask about ideas, definitions, applications, reasoning, steps, methods, formulas, interpretations, and worked examples where relevant.
+- Ask about ideas, definitions, applications, reasoning, steps, methods, formulas, interpretations, and examples where relevant.
 - 4 options only.
 - Exactly 1 correct answer.
 - Provide a short explanation.
 - Do not use broken fragments.
-- Do not ask shallow “who teaches this course?” or “which module contains...” questions unless that is the core subject being studied.
 - Return valid JSON only.
 
 Output format:
@@ -333,7 +363,7 @@ Variation nonce: ${attemptNonce}
     model: "gpt-4.1-mini",
     temperature: 0.7,
     response_format: { type: "json_object" },
-    max_tokens: 3500,
+    max_completion_tokens: 3500,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -348,7 +378,7 @@ Variation nonce: ${attemptNonce}
 
   const rawQs = Array.isArray(data.questions) ? data.questions : [];
 
-  return rawQs
+  const normalized = rawQs
     .map((q) => {
       const opts = Array.isArray(q.options) ? q.options : [];
       const idx = Number.isInteger(q.answerIndex) ? q.answerIndex : -1;
@@ -359,6 +389,8 @@ Variation nonce: ${attemptNonce}
 
       const cleanPrompt = q.prompt.trim();
       const cleanOptions = opts.map((x) => String(x || "").trim());
+      const cleanExplanation =
+        typeof q.explanation === "string" ? q.explanation.trim() : "";
 
       if (!cleanPrompt) return null;
       if (cleanOptions.some((opt) => !opt)) return null;
@@ -368,17 +400,19 @@ Variation nonce: ${attemptNonce}
         prompt: cleanPrompt,
         options: cleanOptions,
         answer: cleanOptions[idx],
-        explanation:
-          typeof q.explanation === "string" ? q.explanation.trim() : "",
+        explanation: cleanExplanation,
       };
     })
     .filter(Boolean);
+
+  return filterOutAdministrativeQuestions(normalized);
 }
 
 /* -------------------- API: generate MCQs -------------------- */
 
 app.post("/api/generate-mcqs", async (req, res) => {
   console.log("=== HIT /api/generate-mcqs ON CURRENT SERVER ===");
+
   try {
     const {
       title,
@@ -402,22 +436,30 @@ app.post("/api/generate-mcqs", async (req, res) => {
     const safeAvoid = Array.isArray(avoid)
       ? avoid
           .filter((x) => typeof x === "string" && x.trim().length > 0)
-          .slice(0, 20)
+          .slice(0, 40)
       : [];
 
     const QUESTION_CHUNK_CHARS = 6000;
     const QUESTION_CHUNK_OVERLAP = 500;
 
-    const chunks = splitIntoQuestionChunks(
+    const allChunks = splitIntoQuestionChunks(
       material,
       QUESTION_CHUNK_CHARS,
       QUESTION_CHUNK_OVERLAP,
     );
 
-    if (!chunks.length) {
+    if (!allChunks.length) {
       return res.status(400).json({
         error: "Unable to process this material for quiz generation.",
       });
+    }
+
+    let preferredChunks = allChunks.filter(
+      (chunk) => !isAdministrativeChunk(chunk),
+    );
+
+    if (!preferredChunks.length) {
+      preferredChunks = allChunks;
     }
 
     console.log("MCQ request:", {
@@ -425,60 +467,79 @@ app.post("/api/generate-mcqs", async (req, res) => {
       requestedCount,
       safeCount,
       materialChars: material.length,
-      chunkCount: chunks.length,
+      allChunkCount: allChunks.length,
+      preferredChunkCount: preferredChunks.length,
       avoidCount: safeAvoid.length,
     });
 
     let finalQuestions = [];
     let generatedPrompts = [];
 
-    // Do several rounds across chunks, small batches each time
-    for (let round = 0; round < 4; round++) {
-      if (finalQuestions.length >= safeCount) break;
+    async function runGenerationRounds(chunksToUse, rounds = 4) {
+      let workingQuestions = [...finalQuestions];
 
-      for (let i = 0; i < chunks.length; i++) {
-        if (finalQuestions.length >= safeCount) break;
+      for (let round = 0; round < rounds; round++) {
+        if (workingQuestions.length >= safeCount) break;
 
-        const remaining = safeCount - finalQuestions.length;
-        const batchSize = Math.min(5, Math.max(3, remaining));
+        for (let i = 0; i < chunksToUse.length; i++) {
+          if (workingQuestions.length >= safeCount) break;
 
-        try {
-          const chunkQuestions = await generateQuestionsForChunk({
-            title,
-            chunkText: chunks[i],
-            count: batchSize,
-            difficulty,
-            avoid: [
-              ...safeAvoid,
-              ...generatedPrompts.slice(-60),
-              ...finalQuestions.map((q) => q.prompt).slice(-60),
-            ],
-            chunkIndex: i,
-            totalChunks: chunks.length,
-          });
+          const remaining = safeCount - workingQuestions.length;
+          const batchSize = Math.min(5, Math.max(3, remaining));
 
-          console.log(
-            `Round ${round + 1}, chunk ${i + 1}/${chunks.length}, got ${chunkQuestions.length} questions`,
-          );
+          try {
+            const chunkQuestions = await generateQuestionsForChunk({
+              title,
+              chunkText: chunksToUse[i],
+              count: batchSize,
+              difficulty,
+              avoid: [
+                ...safeAvoid,
+                ...generatedPrompts.slice(-80),
+                ...workingQuestions.map((q) => q.prompt).slice(-80),
+              ],
+              chunkIndex: i,
+              totalChunks: chunksToUse.length,
+            });
 
-          generatedPrompts.push(...chunkQuestions.map((q) => q.prompt));
-          if (generatedPrompts.length > 200) {
-            generatedPrompts.splice(0, generatedPrompts.length - 200);
+            console.log(
+              `Round ${round + 1}, chunk ${i + 1}/${chunksToUse.length}, got ${chunkQuestions.length} questions`,
+            );
+
+            generatedPrompts.push(...chunkQuestions.map((q) => q.prompt));
+            if (generatedPrompts.length > 240) {
+              generatedPrompts.splice(0, generatedPrompts.length - 240);
+            }
+
+            workingQuestions = dedupeQuestionPool([
+              ...workingQuestions,
+              ...chunkQuestions,
+            ]);
+          } catch (err) {
+            console.error(
+              `MCQ round ${round + 1} chunk ${i + 1}/${chunksToUse.length} failed`,
+              err,
+            );
           }
-
-          finalQuestions = dedupeQuestionPool([
-            ...finalQuestions,
-            ...chunkQuestions,
-          ]);
-        } catch (err) {
-          console.error(
-            `MCQ round ${round + 1} chunk ${i + 1}/${chunks.length} failed`,
-            err,
-          );
         }
       }
+
+      return workingQuestions;
     }
 
+    finalQuestions = await runGenerationRounds(preferredChunks, 4);
+
+    if (
+      finalQuestions.length < Math.min(safeCount, 20) &&
+      preferredChunks !== allChunks
+    ) {
+      console.log(
+        "Preferred chunks produced too few questions. Falling back to all chunks.",
+      );
+      finalQuestions = await runGenerationRounds(allChunks, 3);
+    }
+
+    finalQuestions = filterOutAdministrativeQuestions(finalQuestions);
     finalQuestions = dedupeQuestionPool(finalQuestions);
     finalQuestions = selectDiverseQuestions(
       finalQuestions,
@@ -500,7 +561,8 @@ app.post("/api/generate-mcqs", async (req, res) => {
         returnedCount: finalQuestions.length,
         partial: finalQuestions.length < safeCount,
         chunked: true,
-        chunksUsed: chunks.length,
+        allChunks: allChunks.length,
+        preferredChunks: preferredChunks.length,
       },
       warning:
         finalQuestions.length < safeCount
