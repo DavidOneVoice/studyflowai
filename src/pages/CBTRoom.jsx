@@ -28,7 +28,6 @@ export default function CBTRoom() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [attemptAnswers, setAttemptAnswers] = useState({});
-  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
 
   const { secondsLeft, isRunning, start, stop, reset } = useCountdown();
@@ -57,7 +56,6 @@ export default function CBTRoom() {
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setAttemptAnswers({});
-    setScore(0);
     setShowResult(false);
   }
 
@@ -66,7 +64,6 @@ export default function CBTRoom() {
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setAttemptAnswers({});
-    setScore(0);
     setShowResult(false);
     stop();
     reset();
@@ -84,8 +81,6 @@ export default function CBTRoom() {
 
     if (!chosen) return;
 
-    if (chosen === q.answer) setScore((p) => p + 1);
-
     if (currentIndex + 1 >= activeSet.questions.length) {
       setShowResult(true);
       stop();
@@ -95,6 +90,23 @@ export default function CBTRoom() {
     setCurrentIndex((p) => p + 1);
     setSelectedAnswer(null);
   }
+
+  function handlePrevious() {
+    setCurrentIndex((idx) => Math.max(0, idx - 1));
+    setSelectedAnswer(null);
+  }
+
+  const score = useMemo(() => {
+    if (!activeSet?.questions?.length) return 0;
+
+    return activeSet.questions.reduce((total, q) => {
+      if (attemptAnswers?.[q.id] && attemptAnswers[q.id] === q.answer) {
+        return total + 1;
+      }
+
+      return total;
+    }, 0);
+  }, [activeSet, attemptAnswers]);
 
   function saveAttemptForSet({
     setId,
@@ -362,6 +374,7 @@ export default function CBTRoom() {
         score={score}
         showResult={showResult}
         onNext={handleNext}
+        onPrevious={handlePrevious}
         onExit={exitPractice}
         onRetake={onRetake}
         secondsLeft={secondsLeft}
