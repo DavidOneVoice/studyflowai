@@ -13,6 +13,7 @@ export default function PracticeMode({
   score,
   showResult,
   onNext,
+  onPrevious,
   onExit,
   onRetake,
   secondsLeft,
@@ -129,6 +130,15 @@ export default function PracticeMode({
           </div>
 
           <div className="pmActions">
+            <button
+              className="pmGhost"
+              type="button"
+              onClick={onPrevious}
+              disabled={currentIndex === 0 || generating}
+            >
+              Previous
+            </button>
+
             <button
               className="pmPrimary"
               type="button"
