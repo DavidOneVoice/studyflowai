@@ -106,32 +106,6 @@ export default function PracticeMode({
             <div className="pmPrompt">{currentQuestion.prompt}</div>
           </div>
 
-          <div className="pmQuestionJump" aria-label="Jump to question">
-            {questions.map((q, idx) => {
-              const answered = Boolean(attemptAnswers?.[q.id]);
-              const isCurrent = idx === currentIndex;
-
-              return (
-                <button
-                  key={q.id}
-                  className={
-                    isCurrent
-                      ? "pmJumpBtn current"
-                      : answered
-                        ? "pmJumpBtn answered"
-                        : "pmJumpBtn"
-                  }
-                  type="button"
-                  onClick={() => onJump?.(idx)}
-                  aria-label={`Go to question ${idx + 1}`}
-                  aria-current={isCurrent ? "true" : undefined}
-                >
-                  {idx + 1}
-                </button>
-              );
-            })}
-          </div>
-
           <div className="pmOptions" role="list">
             {currentQuestion.options.map((opt) => {
               const isSelected = chosen === opt;
@@ -269,6 +243,31 @@ export default function PracticeMode({
             >
               Exit
             </button>
+          </div>
+          <div className="pmQuestionJump" aria-label="Jump to question">
+            {questions.map((q, idx) => {
+              const answered = Boolean(attemptAnswers?.[q.id]);
+              const isCurrent = idx === currentIndex;
+
+              return (
+                <button
+                  key={q.id}
+                  className={
+                    isCurrent
+                      ? "pmJumpBtn current"
+                      : answered
+                        ? "pmJumpBtn answered"
+                        : "pmJumpBtn"
+                  }
+                  type="button"
+                  onClick={() => onJump?.(idx)}
+                  aria-label={`Go to question ${idx + 1}`}
+                  aria-current={isCurrent ? "true" : undefined}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
