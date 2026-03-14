@@ -96,6 +96,18 @@ export default function CBTRoom() {
     setSelectedAnswer(null);
   }
 
+  function handleJump(targetIndex) {
+    if (!activeSet?.questions?.length) return;
+
+    const safeIndex = Math.min(
+      Math.max(0, Number(targetIndex) || 0),
+      activeSet.questions.length - 1,
+    );
+
+    setCurrentIndex(safeIndex);
+    setSelectedAnswer(null);
+  }
+
   const score = useMemo(() => {
     if (!activeSet?.questions?.length) return 0;
 
@@ -375,6 +387,7 @@ export default function CBTRoom() {
         showResult={showResult}
         onNext={handleNext}
         onPrevious={handlePrevious}
+        onJump={handleJump}
         onExit={exitPractice}
         onRetake={onRetake}
         secondsLeft={secondsLeft}

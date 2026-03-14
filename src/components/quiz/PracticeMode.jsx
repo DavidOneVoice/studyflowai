@@ -14,6 +14,7 @@ export default function PracticeMode({
   showResult,
   onNext,
   onPrevious,
+  onJump,
   onExit,
   onRetake,
   secondsLeft,
@@ -103,6 +104,32 @@ export default function PracticeMode({
           <div className="pmQuestion">
             <div className="pmQLabel">Question</div>
             <div className="pmPrompt">{currentQuestion.prompt}</div>
+          </div>
+
+          <div className="pmQuestionJump" aria-label="Jump to question">
+            {questions.map((q, idx) => {
+              const answered = Boolean(attemptAnswers?.[q.id]);
+              const isCurrent = idx === currentIndex;
+
+              return (
+                <button
+                  key={q.id}
+                  className={
+                    isCurrent
+                      ? "pmJumpBtn current"
+                      : answered
+                        ? "pmJumpBtn answered"
+                        : "pmJumpBtn"
+                  }
+                  type="button"
+                  onClick={() => onJump?.(idx)}
+                  aria-label={`Go to question ${idx + 1}`}
+                  aria-current={isCurrent ? "true" : undefined}
+                >
+                  {idx + 1}
+                </button>
+              );
+            })}
           </div>
 
           <div className="pmOptions" role="list">

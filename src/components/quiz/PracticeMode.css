@@ -137,6 +137,59 @@
   font-size: 16px;
 }
 
+
+.pmQuestionJump {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pmJumpBtn {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-soft);
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    border 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    color 140ms ease;
+}
+
+.pmJumpBtn:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.pmJumpBtn.current {
+  border-color: rgba(79, 70, 229, 0.24);
+  background: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.12),
+    rgba(6, 182, 212, 0.08)
+  );
+  color: var(--text);
+  box-shadow: 0 10px 22px rgba(79, 70, 229, 0.15);
+}
+
+.pmJumpBtn.answered {
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.08);
+  color: #166534;
+}
+
+.pmJumpBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
 .pmOptions {
   margin-top: 14px;
   display: grid;
