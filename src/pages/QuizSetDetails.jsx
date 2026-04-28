@@ -3,6 +3,7 @@ import { loadState, saveState } from "../lib/storage";
 import ConfirmModal from "../components/common/ConfirmModal";
 import QuizSetupModal from "../components/quiz/QuizSetupModal";
 import { API_BASE } from "../lib/api";
+import { exportQuestionsAsPdf } from "../lib/quizPdf";
 import "./QuizSetDetails.css";
 
 function getQueryParam(name) {
@@ -119,6 +120,28 @@ export default function QuizSetDetails() {
     setConfirmClearOpen(true);
   }
 
+  function handleExportPdf() {
+    if (!set) return;
+
+    const latestAttempt = Array.isArray(set.attempts) ? set.attempts[0] : null;
+    const questions =
+      (Array.isArray(set.questions) && set.questions.length
+        ? set.questions
+        : latestAttempt?.questionsSnapshot) || [];
+
+    if (!questions.length) {
+      setError("No questions available to export yet. Start practice first.");
+      return;
+    }
+
+    try {
+      setError("");
+      exportQuestionsAsPdf({ title: set.title, questions });
+    } catch (e) {
+      setError(e?.message || "Export failed. Please try again.");
+    }
+  }
+
   function handleClearConfirmed() {
     if (!set) return;
 
@@ -222,6 +245,15 @@ export default function QuizSetDetails() {
                 : set.summary
                   ? "View Summary"
                   : "Generate Summary"}
+            </button>
+
+            <button
+              className="qsdGhost"
+              type="button"
+              onClick={handleExportPdf}
+              disabled={busy}
+            >
+              Export Questions as PDF
             </button>
 
             {attempts.length > 0 && (
