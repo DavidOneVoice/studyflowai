@@ -1,354 +1,168 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { loadState, saveState } from "../lib/storage";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAppState } from "../hooks/useAppState";
 import { useCountdown } from "../hooks/useCountdown";
 import PracticeMode from "../components/quiz/PracticeMode";
 import { API_BASE } from "../lib/api";
+import { createOnceRequest, requestPracticeQuestions, saveGeneratedQuestions, savePracticeAttempt } from "../lib/practiceSession";
 import "./CBTRoom.css";
 
-function getQueryParam(name) {
-  const hash = window.location.hash || "";
-  const q = hash.split("?")[1] || "";
-  const params = new URLSearchParams(q);
-  return params.get(name) || "";
-}
-
-function getIntParam(name, fallback) {
-  const v = Number(getQueryParam(name));
-  return Number.isFinite(v) && v > 0 ? Math.floor(v) : fallback;
+function getLaunch(quizSets) {
+  const params = new URLSearchParams(window.location.hash.split("?")[1] || "");
+  const positiveInteger = (name, fallback) => {
+    const value = Number(params.get(name));
+    return Number.isFinite(value) && value >= 1 ? Math.floor(value) : fallback;
+  };
+  const count = positiveInteger("count", 10);
+  const setId = params.get("setId") || "";
+  return { setId, set: quizSets.find((set) => set.id === setId), count, minutes: positiveInteger("mins", count) };
 }
 
 export default function CBTRoom() {
-  const [state, setState] = useState(() => loadState());
-  const quizSets = useMemo(() => state.quizSets || [], [state.quizSets]);
-
+  const [state, setState] = useAppState();
+  // App remounts this page when its route changes; a launch owns one request.
+  const [launch] = useState(() => getLaunch(state.quizSets || []));
+  const [initialRequest] = useState(() => createOnceRequest(() => requestPracticeQuestions({ set: launch.set, count: launch.count, apiBase: API_BASE })));
+  const [session, setSession] = useState(null);
+  const [pendingSession, setPendingSession] = useState(null);
   const [error, setError] = useState("");
-  const [generating, setGenerating] = useState(false);
-
-  const [activeSetId, setActiveSetId] = useState(null);
+  const [resultSaveError, setResultSaveError] = useState("");
+  const [generating, setGenerating] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [attemptAnswers, setAttemptAnswers] = useState({});
-  const [showResult, setShowResult] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const inFlight = useRef(true);
+  const mounted = useRef(false);
+  const completedAttempt = useRef(null);
+  const { secondsLeft, expired, start, stop, reset } = useCountdown();
 
-  const { secondsLeft, isRunning, start, stop, reset } = useCountdown();
+  const activeSet = session?.set || null;
+  const activeSetId = activeSet?.id || null;
+  const showResult = Boolean(session) && (finished || expired);
+  const score = useMemo(() => (activeSet?.questions || []).reduce((total, question) => total + (attemptAnswers[question.id] === question.answer ? 1 : 0), 0), [activeSet, attemptAnswers]);
 
-  useEffect(() => {
-    saveState(state);
-  }, [state]);
-
-  const activeSet = useMemo(
-    () => quizSets.find((s) => s.id === activeSetId) || null,
-    [quizSets, activeSetId],
-  );
-
-  const requestedCount = getIntParam("count", 10);
-  const mins = getIntParam("mins", requestedCount);
-  const actualQuestionCount = activeSet?.questions?.length || 0;
-
-  useEffect(() => {
-    if (activeSetId && isRunning === false && secondsLeft === 0) {
-      if (!showResult) setShowResult(true);
+  const beginSession = useCallback((candidate) => {
+    const saved = setState((previous) => saveGeneratedQuestions(previous, candidate.set.id, candidate.set.questions));
+    if (!saved) {
+      setPendingSession(candidate);
+      setError("Your questions are ready but could not be saved. Retry saving to start without generating them again.");
+      return false;
     }
-  }, [activeSetId, isRunning, secondsLeft, showResult]);
-
-  function startPractice(setId) {
-    setActiveSetId(setId);
+    completedAttempt.current = null;
+    setPendingSession(null);
+    setSession(candidate);
     setCurrentIndex(0);
     setSelectedAnswer(null);
     setAttemptAnswers({});
-    setShowResult(false);
-  }
+    setFinished(false);
+    setError(candidate.warning || "");
+    setResultSaveError("");
+    start(candidate.minutes * 60);
+    return true;
+  }, [setState, start]);
+
+  useEffect(() => {
+    mounted.current = true;
+    let subscribed = true;
+    initialRequest().then((result) => {
+      if (!subscribed) return;
+      inFlight.current = false;
+      setGenerating(false);
+      beginSession({ id: crypto.randomUUID(), set: { ...launch.set, questions: result.questions }, minutes: launch.minutes, warning: result.warning });
+    }).catch((failure) => {
+      if (!subscribed) return;
+      inFlight.current = false;
+      setGenerating(false);
+      setError(failure?.message || "Question generation failed.");
+    });
+    return () => { subscribed = false; mounted.current = false; };
+  }, [initialRequest, launch, beginSession]);
 
   function exitPractice() {
-    setActiveSetId(null);
-    setCurrentIndex(0);
-    setSelectedAnswer(null);
-    setAttemptAnswers({});
-    setShowResult(false);
+    if (showResult && !finishAttempt()) return;
     stop();
     reset();
-
-    const sid = getQueryParam("setId");
-    window.location.hash = sid ? `#/quizSet?setId=${sid}` : "#/library";
+    window.location.hash = launch.setId ? `#/quizSet?setId=${encodeURIComponent(launch.setId)}` : "#/library";
   }
 
   function handleNext(answerOverride) {
-    if (!activeSet) return;
-
-    const q = activeSet.questions[currentIndex];
-    const chosen =
-      answerOverride ?? selectedAnswer ?? attemptAnswers?.[q?.id] ?? null;
-
+    if (!activeSet || showResult) return;
+    const question = activeSet.questions[currentIndex];
+    const chosen = answerOverride ?? selectedAnswer ?? attemptAnswers[question.id];
     if (!chosen) return;
-
+    setAttemptAnswers((answers) => ({ ...answers, [question.id]: chosen }));
     if (currentIndex + 1 >= activeSet.questions.length) {
-      setShowResult(true);
+      setFinished(true);
       stop();
-      return;
+    } else {
+      setCurrentIndex((index) => index + 1);
+      setSelectedAnswer(null);
     }
-
-    setCurrentIndex((p) => p + 1);
-    setSelectedAnswer(null);
   }
 
   function handlePrevious() {
-    setCurrentIndex((idx) => Math.max(0, idx - 1));
+    setCurrentIndex((index) => Math.max(0, index - 1));
     setSelectedAnswer(null);
   }
 
   function handleJump(targetIndex) {
-    if (!activeSet?.questions?.length) return;
-
-    const safeIndex = Math.min(
-      Math.max(0, Number(targetIndex) || 0),
-      activeSet.questions.length - 1,
-    );
-
-    setCurrentIndex(safeIndex);
+    if (!activeSet?.questions.length) return;
+    setCurrentIndex(Math.min(Math.max(0, Number(targetIndex) || 0), activeSet.questions.length - 1));
     setSelectedAnswer(null);
   }
 
-  const score = useMemo(() => {
-    if (!activeSet?.questions?.length) return 0;
-
-    return activeSet.questions.reduce((total, q) => {
-      if (attemptAnswers?.[q.id] && attemptAnswers[q.id] === q.answer) {
-        return total + 1;
-      }
-
-      return total;
-    }, 0);
-  }, [activeSet, attemptAnswers]);
-
-  function saveAttemptForSet({
-    setId,
-    score,
-    total,
-    answers,
-    questionsSnapshot,
-    minutesPlanned,
-  }) {
-    const takenAt = new Date().toISOString();
-
-    const attempt = {
-      id: crypto.randomUUID(),
-      takenAt,
-      questionCount: total,
-      minutesPlanned,
-      score,
-      total,
-      answers,
-      questionsSnapshot,
-    };
-
-    setState((prev) => ({
-      ...prev,
-      quizSets: (prev.quizSets || []).map((set) => {
-        if (set.id !== setId) return set;
-
-        const oldAttempts = Array.isArray(set.attempts) ? set.attempts : [];
-        const nextAttempts = [attempt, ...oldAttempts].slice(0, 4);
-
-        return { ...set, attempts: nextAttempts };
-      }),
-    }));
+  function finishAttempt() {
+    if (!session || !showResult) return false;
+    if (!completedAttempt.current || completedAttempt.current.id !== session.id) {
+      completedAttempt.current = {
+        id: session.id, takenAt: new Date().toISOString(),
+        questionCount: activeSet.questions.length, minutesPlanned: session.minutes,
+        score, total: activeSet.questions.length, answers: { ...attemptAnswers },
+        questionsSnapshot: activeSet.questions,
+      };
+    }
+    const saved = setState((previous) => savePracticeAttempt(previous, activeSetId, completedAttempt.current));
+    setResultSaveError(saved ? "" : "Your result could not be saved. Retry saving it before leaving or starting another session.");
+    return saved;
   }
 
-  async function generateWithAI(setId, count = 10) {
-    const target = (state.quizSets || []).find((x) => x.id === setId);
-    if (!target) return null;
-
-    try {
-      setGenerating(true);
-      setError("");
-
-      console.log("QUIZ sourceText length:", target.sourceText?.length || 0);
-      console.log("Requested count:", count);
-      console.log("API_BASE:", API_BASE);
-      console.log("MCQ endpoint:", `${API_BASE}/api/generate-mcqs`);
-
-      const r = await fetch(`${API_BASE}/api/generate-mcqs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: target.title,
-          sourceText: target.sourceText,
-          count,
-          difficulty: "mixed",
-          nonce: crypto.randomUUID(),
-
-          // temporary test
-          avoid: [],
-        }),
-      });
-
-      const raw = await r.text();
-      let data = {};
-
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch {
-        data = { error: raw || "Server returned a non-JSON response." };
-      }
-
-      if (!r.ok) {
-        setError(data.error || `AI generation failed (HTTP ${r.status}).`);
-        return null;
-      }
-
-      const questions = Array.isArray(data.questions) ? data.questions : [];
-
-      if (!questions.length) {
-        setError("AI returned no questions. Try uploading more material.");
-        return null;
-      }
-
-      const looksValid = questions.every(
-        (q) =>
-          q &&
-          typeof q.prompt === "string" &&
-          Array.isArray(q.options) &&
-          q.options.length === 4 &&
-          typeof q.answer === "string",
-      );
-
-      if (!looksValid) {
-        setError("AI returned questions in an unexpected format. Try again.");
-        return null;
-      }
-
-      setState((prev) => ({
-        ...prev,
-        quizSets: (prev.quizSets || []).map((set) => {
-          if (set.id !== setId) return set;
-
-          const newPrompts = questions.map((q) => q.prompt).filter(Boolean);
-          const oldHistory = Array.isArray(set.promptHistory)
-            ? set.promptHistory
-            : [];
-
-          return {
-            ...set,
-            questions,
-            promptHistory: [...newPrompts, ...oldHistory].slice(0, 140),
-          };
-        }),
-      }));
-
-      if (data.warning) {
-        setError(data.warning);
-      } else {
-        setError("");
-      }
-
-      return questions;
-    } catch (err) {
-      console.error(err);
-      setError(err?.message || "AI generation failed.");
-      return null;
-    } finally {
-      setGenerating(false);
-    }
-  }
-
-  const startedRef = useRef("");
-
-  useEffect(() => {
-    const setId = getQueryParam("setId");
-    if (!setId) {
-      setError("No practice set selected.");
-      return;
-    }
-
-    const count = getIntParam("count", 10);
-    const durationMins = getIntParam("mins", count);
-
-    const key = `${setId}:${count}:${durationMins}`;
-    if (startedRef.current === key) return;
-    startedRef.current = key;
-
-    (async () => {
-      const questions = await generateWithAI(setId, count);
-      if (!questions || !questions.length) return;
-
-      start(durationMins * 60);
-      startPractice(setId);
-
-      window.location.hash = `#/cbt?setId=${setId}&count=${count}&mins=${durationMins}`;
-    })();
-  }, [start]);
-
-  async function onRetake() {
-    if (!activeSetId) return;
-
-    const count = getIntParam("count", 10);
-    const durationMins = getIntParam("mins", count);
-
-    setError("Generating new practice questions…");
-
-    const questions = await generateWithAI(activeSetId, count);
-
-    if (!questions || !questions.length) return;
-
+  async function generateNewSession() {
+    if (inFlight.current) return;
+    // Retaking must never discard the answers of an unsaved completed attempt.
+    if (showResult && !finishAttempt()) return;
+    inFlight.current = true;
+    setGenerating(true);
     setError("");
-    start(durationMins * 60);
-    startPractice(activeSetId);
+    try {
+      const currentSet = (state.quizSets || []).find((set) => set.id === launch.setId);
+      const result = await requestPracticeQuestions({ set: currentSet, count: launch.count, apiBase: API_BASE });
+      if (mounted.current) beginSession({ id: crypto.randomUUID(), set: { ...currentSet, questions: result.questions }, minutes: launch.minutes, warning: result.warning });
+    } catch (failure) {
+      if (mounted.current) setError(failure?.message || "Question generation failed.");
+    } finally {
+      inFlight.current = false;
+      if (mounted.current) setGenerating(false);
+    }
   }
 
-  if (!activeSetId || !activeSet) {
+  if (!activeSet || pendingSession) {
     return (
       <section className="cbtShell card">
         <div className="cbtHeaderOnly">
           <h2 className="cbtTitle">Practice Session</h2>
-
-          {error ? (
-            <p className="cbtMuted">{error}</p>
-          ) : generating ? (
-            <div className="practiceFancyStatus">
+          {generating ? (
+            <div className="practiceFancyStatus" role="status">
               <div className="fancy-loader-wrapper">
-                {"Generating".split("").map((letter, index) => (
-                  <span
-                    key={`${letter}-${index}`}
-                    className="fancy-loader-letter"
-                    style={{ animationDelay: `${0.1 + index * 0.105}s` }}
-                  >
-                    {letter}
-                  </span>
-                ))}
-                <div className="fancy-loader"></div>
+                {"Generating".split("").map((letter, index) => <span key={`${letter}-${index}`} className="fancy-loader-letter" style={{ animationDelay: `${0.1 + index * 0.105}s` }}>{letter}</span>)}
+                <div className="fancy-loader" />
               </div>
-
-              <div className="bubbleEffectWrap">
-                <div className="Strich1">
-                  <div className="Strich2">
-                    <div className="bubble"></div>
-                    <div className="bubble1"></div>
-                    <div className="bubble2"></div>
-                    <div className="bubble3"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="glitchLoader">
-                <div data-glitch="Loading..." className="glitch">
-                  Loading...
-                </div>
-              </div>
-
-              <p className="cbtMuted">This may take a little while.</p>
+              <p className="cbtMuted">Preparing your questions. This may take a little while.</p>
             </div>
-          ) : (
-            <p className="cbtMuted">Loading…</p>
-          )}
+          ) : <p className="cbtMuted" role="alert">{error}</p>}
         </div>
-
-        <button
-          className="cbtBack"
-          type="button"
-          onClick={() => (window.location.hash = "#/library")}
-        >
-          Back to Library
-        </button>
+        {pendingSession && <button className="cbtBack" type="button" onClick={() => beginSession(pendingSession)}>Retry Saving and Start</button>}
+        {!generating && !pendingSession && launch.set && <button className="cbtBack" type="button" onClick={generateNewSession}>Try Again</button>}
+        <button className="cbtBack" type="button" onClick={exitPractice}>Back to Library</button>
       </section>
     );
   }
@@ -360,50 +174,22 @@ export default function CBTRoom() {
           <div className="cbtBadge">Practice Mode</div>
           <div className="cbtSetTitle">{activeSet.title}</div>
           <div className="cbtMeta">
-            <span className="cbtMetaItem">{actualQuestionCount} questions</span>
+            <span className="cbtMetaItem">{activeSet.questions.length} questions</span>
             <span className="cbtMetaDot" aria-hidden="true" />
-            <span className="cbtMetaItem">{mins} mins</span>
+            <span className="cbtMetaItem">{session.minutes} mins</span>
           </div>
         </div>
-
-        <div className="cbtHudRight">
-          {error && <div className="cbtError">{error}</div>}
-        </div>
+        <div className="cbtHudRight">{(resultSaveError || error) && <div className="cbtError" role="alert">{resultSaveError || error}</div>}</div>
       </section>
-
-      {generating && (
-        <div className="cbtLoading">Generating new questions…</div>
-      )}
-
+      {generating && <div className="cbtLoading" role="status">Generating new questions…</div>}
       <PracticeMode
-        generating={generating}
-        activeSet={activeSet}
-        currentIndex={currentIndex}
-        selectedAnswer={selectedAnswer}
-        setSelectedAnswer={setSelectedAnswer}
-        attemptAnswers={attemptAnswers}
-        setAttemptAnswers={setAttemptAnswers}
-        score={score}
-        showResult={showResult}
-        onNext={handleNext}
-        onPrevious={handlePrevious}
-        onJump={handleJump}
-        onExit={exitPractice}
-        onRetake={onRetake}
-        secondsLeft={secondsLeft}
-        activeSetId={activeSetId}
-        onFinishAttempt={() => {
-          if (!activeSetId || !activeSet) return;
-
-          saveAttemptForSet({
-            setId: activeSetId,
-            score,
-            total: (activeSet.questions || []).length,
-            answers: attemptAnswers,
-            questionsSnapshot: activeSet.questions || [],
-            minutesPlanned: mins,
-          });
-        }}
+        generating={generating} activeSet={activeSet} activeSetId={activeSetId} sessionId={session.id}
+        currentIndex={currentIndex} selectedAnswer={selectedAnswer} setSelectedAnswer={setSelectedAnswer}
+        attemptAnswers={attemptAnswers} setAttemptAnswers={setAttemptAnswers}
+        score={score} showResult={showResult}
+        onNext={handleNext} onPrevious={handlePrevious} onJump={handleJump}
+        onExit={exitPractice} onRetake={generateNewSession}
+        secondsLeft={secondsLeft} onFinishAttempt={finishAttempt}
       />
     </div>
   );

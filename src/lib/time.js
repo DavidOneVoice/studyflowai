@@ -3,6 +3,7 @@
  * Example: "18:30" → 1110
  */
 export function toMinutes(hhmm) {
+  if (typeof hhmm !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(hhmm)) return NaN;
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
 }

@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { generateSchedule } from "../lib/scheduler";
-import { loadState, saveState } from "../lib/storage";
+import { useAppState } from "../hooks/useAppState";
+import { dateToIso } from "../lib/dateHelpers";
 import { makeCourse, validateCourse } from "../lib/courses";
-import { API_BASE } from "../lib/api";
 
 import PlannerSetupCard from "../components/planner/PlannerSetupCard";
 import PlannerCoursesCard from "../components/planner/PlannerCoursesCard";
@@ -10,7 +10,7 @@ import PlannerCoursesCard from "../components/planner/PlannerCoursesCard";
 import "./Planner.css";
 
 export default function Planner() {
-  const [state, setState] = useState(() => loadState());
+  const [state, setState] = useAppState();
   const [activeTab, setActiveTab] = useState("setup");
 
   const [name, setName] = useState("");
@@ -19,21 +19,6 @@ export default function Planner() {
 
   const [errors, setErrors] = useState([]);
   const [scheduleError, setScheduleError] = useState("");
-  const [quizError, setQuizError] = useState("");
-
-  const [takingQuizSetId, setTakingQuizSetId] = useState(null);
-  const [toast, setToast] = useState("");
-
-  useEffect(() => {
-    saveState(state);
-  }, [state]);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(""), 1600);
-    return () => clearTimeout(t);
-  }, [toast]);
-
   const courses = useMemo(() => state.courses || [], [state.courses]);
   const quizSets = useMemo(() => state.quizSets || [], [state.quizSets]);
 
@@ -42,7 +27,7 @@ export default function Planner() {
       ...prev,
       availability: {
         ...(prev.availability || {}),
-        ...(nextAvailability || {}),
+        ...(typeof nextAvailability === "function" ? nextAvailability(prev.availability) : nextAvailability),
       },
     }));
   }
@@ -60,10 +45,11 @@ export default function Planner() {
 
     const newCourse = makeCourse(candidate);
 
-    setState((prev) => ({
+    const saved = setState((prev) => ({
       ...prev,
       courses: [...(prev.courses || []), newCourse],
     }));
+    if (!saved) return;
 
     setName("");
     setExamDate("");
@@ -73,7 +59,7 @@ export default function Planner() {
   }
 
   function removeCourse(id) {
-    setState((prev) => {
+    return setState((prev) => {
       const nextCourses = (prev.courses || []).filter((c) => c.id !== id);
 
       const nextSchedule =
@@ -85,15 +71,16 @@ export default function Planner() {
         ...prev,
         courses: nextCourses,
         schedule: nextSchedule,
+        quizSets: prev.quizSets.map((set) => set.courseId === id ? { ...set, courseId: "" } : set),
       };
     });
   }
 
   function removeExpiredCourses() {
-    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayIso = dateToIso(new Date());
     let removedCount = 0;
 
-    setState((prev) => {
+    const saved = setState((prev) => {
       const expiredIds = new Set(
         (prev.courses || [])
           .filter((c) => String(c.examDate || "") < todayIso)
@@ -116,14 +103,15 @@ export default function Planner() {
         ...prev,
         courses: nextCourses,
         schedule: nextSchedule,
+        quizSets: prev.quizSets.map((set) => expiredIds.has(set.courseId) ? { ...set, courseId: "" } : set),
       };
     });
 
-    return removedCount;
+    return saved ? removedCount : false;
   }
 
   function handleGenerateSchedule() {
-    const todayIso = new Date().toISOString().slice(0, 10);
+    const todayIso = dateToIso(new Date());
     const activeCourses = (state.courses || []).filter(
       (c) => String(c.examDate || "") >= todayIso,
     );
@@ -138,93 +126,19 @@ export default function Planner() {
       return;
     }
 
-    setState((prev) => ({ ...prev, schedule: result.schedule }));
+    if (!setState((prev) => ({ ...prev, schedule: result.schedule }))) return;
     setScheduleError("");
-    window.location.hash = "#/plan";
-    setToast("Study plan generated ✅");
+    window.location.hash = "#/schedule";
   }
 
   function handleClearSchedule() {
-    setState((prev) => ({ ...prev, schedule: [] }));
-    setScheduleError("");
+    const saved = setState((prev) => ({ ...prev, schedule: [] }));
+    if (saved) setScheduleError("");
+    return saved;
   }
 
-  async function takeQuizFromPlanner(quizSetId, count = 10) {
-    const target = (state.quizSets || []).find((q) => q.id === quizSetId);
-    if (!target) return;
-
-    try {
-      setTakingQuizSetId(quizSetId);
-      setQuizError("");
-
-      const r = await fetch(`${API_BASE}/api/generate-mcqs`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: target.title,
-          sourceText: target.sourceText,
-          count,
-          difficulty: "mixed",
-          nonce: crypto.randomUUID(),
-          avoid: (target.promptHistory || target.questions || [])
-            .map((q) => (typeof q === "string" ? q : q.prompt))
-            .filter(Boolean)
-            .slice(0, 40),
-        }),
-      });
-
-      const raw = await r.text();
-      let data = {};
-
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch {
-        data = { error: raw || "Server returned a non-JSON response." };
-      }
-
-      if (!r.ok) {
-        setQuizError(data.error || `AI generation failed (HTTP ${r.status}).`);
-        return;
-      }
-
-      const questions = Array.isArray(data.questions) ? data.questions : [];
-
-      if (!questions.length) {
-        setQuizError("AI returned no questions. Try uploading more material.");
-        return;
-      }
-
-      const looksValid = questions.every(
-        (q) =>
-          q &&
-          typeof q.prompt === "string" &&
-          Array.isArray(q.options) &&
-          q.options.length === 4 &&
-          typeof q.answer === "string",
-      );
-
-      if (!looksValid) {
-        setQuizError(
-          "AI returned questions in an unexpected format. Try again.",
-        );
-        return;
-      }
-
-      setState((prev) => ({
-        ...prev,
-        quizSets: (prev.quizSets || []).map((set) =>
-          set.id === quizSetId ? { ...set, questions } : set,
-        ),
-        ui: { ...(prev.ui || {}), activeTab: "quiz", activeSetId: quizSetId },
-      }));
-
-      setToast("Practice quiz is ready ✅ Open Practice to begin.");
-    } catch (err) {
-      console.error(err);
-      setQuizError(err?.message || "Failed to generate quiz.");
-    } finally {
-      setTakingQuizSetId(null);
-    }
+  function takeQuizFromPlanner(quizSetId) {
+    window.location.hash = `#/quizSet?setId=${encodeURIComponent(quizSetId)}&start=1`;
   }
 
   return (
@@ -240,24 +154,23 @@ export default function Planner() {
             </p>
           </div>
 
-          <div className="plHeaderActions">
+          {state.schedule.length > 0 && <div className="plHeaderActions">
             <button
               className="plGhost"
               type="button"
-              onClick={() => (window.location.hash = "#/plan")}
+              onClick={() => (window.location.hash = "#/schedule")}
             >
-              Refresh Plan
+              View Schedule
             </button>
-          </div>
+          </div>}
         </header>
-
-        {toast && <div className="plToast">{toast}</div>}
 
         <div className="plTabsCard">
           <div className="plTabs">
             <button
               type="button"
               className={activeTab === "setup" ? "plTab active" : "plTab"}
+              aria-pressed={activeTab === "setup"}
               onClick={() => setActiveTab("setup")}
             >
               Setup
@@ -266,6 +179,7 @@ export default function Planner() {
             <button
               type="button"
               className={activeTab === "courses" ? "plTab active" : "plTab"}
+              aria-pressed={activeTab === "courses"}
               onClick={() => setActiveTab("courses")}
             >
               Subjects
@@ -293,10 +207,8 @@ export default function Planner() {
             <PlannerCoursesCard
               courses={courses}
               quizSets={quizSets}
-              takingQuizSetId={takingQuizSetId}
               onRemoveCourse={removeCourse}
               onTakeQuizFromPlanner={takeQuizFromPlanner}
-              quizError={quizError}
               scheduleError={scheduleError}
               onGenerateSchedule={handleGenerateSchedule}
               onClearSchedule={handleClearSchedule}

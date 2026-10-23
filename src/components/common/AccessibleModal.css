@@ -1,0 +1,27 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.modalOverlay .modalDialog {
+  min-width: 0;
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 650px) {
+  .modalOverlay {
+    padding: 12px;
+  }
+
+  .modalOverlay .modalDialog {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+}

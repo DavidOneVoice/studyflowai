@@ -1,3 +1,5 @@
+import { useId } from "react";
+import AccessibleModal from "./AccessibleModal";
 import "./ConfirmModal.css";
 
 export default function ConfirmModal({
@@ -7,42 +9,43 @@ export default function ConfirmModal({
   confirmText = "Confirm",
   cancelText = "Cancel",
   danger = false,
+  error = "",
   onConfirm,
   onCancel,
 }) {
-  if (!open) return null;
+  const id = useId();
 
   return (
-    <div
-      className="cmOverlay"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      onClick={onCancel}
+    <AccessibleModal
+      open={open}
+      onClose={onCancel}
+      labelledBy={`${id}-title`}
+      describedBy={`${id}-message`}
+      overlayClassName="cmOverlay"
+      className="cmCard"
     >
-      <div className="cmCard" onClick={(e) => e.stopPropagation()}>
-        <div className="cmHeader">
-          <h3 className="cmTitle">{title}</h3>
-        </div>
-
-        <div className="cmBody">
-          <p className="cmMessage">{message}</p>
-        </div>
-
-        <div className="cmActions">
-          <button className="cmBtn" type="button" onClick={onCancel}>
-            {cancelText}
-          </button>
-
-          <button
-            className={danger ? "cmBtn cmDanger" : "cmBtn cmPrimary"}
-            type="button"
-            onClick={onConfirm}
-          >
-            {confirmText}
-          </button>
-        </div>
+      <div className="cmHeader">
+        <h3 className="cmTitle" id={`${id}-title`}>{title}</h3>
       </div>
-    </div>
+
+      <div className="cmBody">
+        <p className="cmMessage" id={`${id}-message`}>{message}</p>
+        {error && <p className="appAlert" role="alert">{error}</p>}
+      </div>
+
+      <div className="cmActions">
+        <button className="cmBtn" type="button" onClick={onCancel}>
+          {cancelText}
+        </button>
+
+        <button
+          className={danger ? "cmBtn cmDanger" : "cmBtn cmPrimary"}
+          type="button"
+          onClick={onConfirm}
+        >
+          {confirmText}
+        </button>
+      </div>
+    </AccessibleModal>
   );
 }

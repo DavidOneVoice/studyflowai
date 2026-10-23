@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import { loadState, saveState } from "../lib/storage";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useAppState } from "../hooks/useAppState";
+import { getBestAttempt } from "../lib/practiceSession";
 import ConfirmModal from "../components/common/ConfirmModal";
 import QuizSetupModal from "../components/quiz/QuizSetupModal";
 import { API_BASE } from "../lib/api";
-import { exportQuestionsAsPdf } from "../lib/quizPdf";
 import "./QuizSetDetails.css";
 
 function getQueryParam(name) {
@@ -22,26 +22,29 @@ function fmtDate(iso) {
 }
 
 export default function QuizSetDetails() {
-  const [state, setState] = useState(() => loadState());
+  const [state, setState] = useAppState();
   const setId = getQueryParam("setId");
-  const [setupOpen, setSetupOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(() => getQueryParam("start") === "1");
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState("");
+  const [pendingSummary, setPendingSummary] = useState("");
+  const pendingRequest = useRef(false);
+  const mounted = useRef(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
 
   const set = useMemo(() => {
-    return (state.quizSets || []).find((s) => s.id === setId) || null;
+    return (state.quizSets || []).find((s) => s?.id === setId) || null;
   }, [state.quizSets, setId]);
 
-  const attempts = Array.isArray(set?.attempts) ? set.attempts : [];
-  const best = attempts.reduce(
-    (acc, a) => Math.max(acc, Number(a.score || 0)),
-    0,
-  );
+  const attempts = Array.isArray(set?.attempts)
+    ? set.attempts.filter((attempt) => attempt && typeof attempt === "object" && !Array.isArray(attempt))
+    : [];
+  const best = getBestAttempt(attempts);
   const lastAttempt = attempts[0] || null;
 
   function go(to) {
@@ -49,65 +52,52 @@ export default function QuizSetDetails() {
   }
 
   function goToNotes() {
-    window.location.hash = `#/notes?setId=${setId}`;
+    window.location.hash = `#/notes?setId=${encodeURIComponent(setId)}`;
+  }
+
+  function persistSummary(summary) {
+    const saved = setState((previous) => {
+      if (!previous.quizSets?.some((item) => item?.id === setId)) {
+        throw new Error("This practice set was removed. Return to the library to choose another set.");
+      }
+      return {
+        ...previous,
+        quizSets: previous.quizSets.map((item) => item?.id === setId ? { ...item, summary } : item),
+      };
+    });
+    if (saved) goToNotes();
+    else {
+      setPendingSummary(summary);
+      setError("Your summary is ready but could not be saved. Retry saving after resolving the storage error.");
+    }
   }
 
   async function generateSummary() {
-    if (!set) return;
-
-    if (set.summary) {
-      goToNotes();
-      return;
-    }
-
+    if (!set || pendingRequest.current) return;
+    if (set.summary) { goToNotes(); return; }
+    if (pendingSummary) { persistSummary(pendingSummary); return; }
+    pendingRequest.current = true;
+    setBusy("summary");
+    setError("");
     try {
-      setBusy(true);
-      setError("");
-
-      const r = await fetch(`${API_BASE}/api/summarize`, {
+      const response = await fetch(`${API_BASE}/api/summarize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: set.title, sourceText: set.sourceText }),
       });
-
-      const raw = await r.text();
-      let data = {};
-
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch {
-        data = { error: raw || "Server returned a non-JSON response." };
-      }
-
-      if (!r.ok) {
-        setError(data.error || "Summary generation failed.");
-        return;
-      }
-
-      const summary = String(data.summary || "").trim();
-
-      if (!summary) {
-        setError("AI returned an empty note.");
-        return;
-      }
-
-      setState((prev) => {
-        const nextState = {
-          ...prev,
-          quizSets: (prev.quizSets || []).map((x) =>
-            x.id === setId ? { ...x, summary } : x,
-          ),
-        };
-
-        saveState(nextState);
-        setTimeout(() => goToNotes(), 0);
-
-        return nextState;
-      });
-    } catch (e) {
-      setError(e?.message || "Summary generation failed.");
+      const raw = await response.text();
+      let data;
+      try { data = JSON.parse(raw); } catch { throw new Error("The server returned an unreadable response. Please try again."); }
+      if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("The server returned an unreadable response. Please try again.");
+      if (!response.ok) throw new Error(data.error || "Summary generation failed.");
+      const summary = typeof data.summary === "string" ? data.summary.trim() : "";
+      if (!summary) throw new Error("AI returned an empty note. Please try again.");
+      if (mounted.current) persistSummary(summary);
+    } catch (error) {
+      if (mounted.current) setError(error?.message || "Summary generation failed.");
     } finally {
-      setBusy(false);
+      pendingRequest.current = false;
+      if (mounted.current) setBusy("");
     }
   }
 
@@ -120,10 +110,10 @@ export default function QuizSetDetails() {
     setConfirmClearOpen(true);
   }
 
-  function handleExportPdf() {
-    if (!set) return;
+  async function handleExportPdf() {
+    if (!set || pendingRequest.current) return;
 
-    const latestAttempt = Array.isArray(set.attempts) ? set.attempts[0] : null;
+    const latestAttempt = lastAttempt;
     const questions =
       (Array.isArray(set.questions) && set.questions.length
         ? set.questions
@@ -136,23 +126,29 @@ export default function QuizSetDetails() {
 
     try {
       setError("");
-      exportQuestionsAsPdf({ title: set.title, questions });
+      pendingRequest.current = true;
+      setBusy("pdf");
+      const { exportQuestionsAsPdf } = await import("../lib/quizPdf");
+      await exportQuestionsAsPdf({ title: set.title, questions });
     } catch (e) {
-      setError(e?.message || "Export failed. Please try again.");
+      if (mounted.current) setError(e?.message || "Export failed. Please try again.");
+    } finally {
+      pendingRequest.current = false;
+      if (mounted.current) setBusy("");
     }
   }
 
   function handleClearConfirmed() {
     if (!set) return;
 
-    setState((prev) => ({
+    const saved = setState((prev) => ({
       ...prev,
       quizSets: (prev.quizSets || []).map((x) =>
-        x.id === setId ? { ...x, attempts: [] } : x,
+        x?.id === setId ? { ...x, attempts: [] } : x,
       ),
     }));
 
-    setConfirmClearOpen(false);
+    if (saved) setConfirmClearOpen(false);
   }
 
   if (!setId) {
@@ -210,9 +206,9 @@ export default function QuizSetDetails() {
                   : "No attempts yet"}
               </span>
 
-              {attempts.length ? (
+              {best ? (
                 <span className="qsdPill">
-                  Best: <strong>{best}</strong>/{lastAttempt?.total || "-"}
+                  Best: <strong>{best.score}/{best.total}</strong> ({Math.round(Number(best.score) / Number(best.total) * 100)}%)
                 </span>
               ) : null}
 
@@ -229,7 +225,7 @@ export default function QuizSetDetails() {
               className="qsdPrimary"
               type="button"
               onClick={startPractice}
-              disabled={busy}
+              disabled={Boolean(busy)}
             >
               Start Practice
             </button>
@@ -238,10 +234,12 @@ export default function QuizSetDetails() {
               className="qsdGhost"
               type="button"
               onClick={generateSummary}
-              disabled={busy}
+              disabled={Boolean(busy)}
             >
-              {busy
+              {busy === "summary"
                 ? "Generating Summary..."
+                : pendingSummary
+                  ? "Retry Saving Summary"
                 : set.summary
                   ? "View Summary"
                   : "Generate Summary"}
@@ -251,9 +249,9 @@ export default function QuizSetDetails() {
               className="qsdGhost"
               type="button"
               onClick={handleExportPdf}
-              disabled={busy}
+              disabled={Boolean(busy)}
             >
-              Export Questions as PDF
+              {busy === "pdf" ? "Preparing PDF..." : "Export Questions as PDF"}
             </button>
 
             {attempts.length > 0 && (
@@ -261,7 +259,7 @@ export default function QuizSetDetails() {
                 className="qsdDanger"
                 type="button"
                 onClick={clearAttempts}
-                disabled={busy}
+                disabled={Boolean(busy)}
               >
                 Clear Attempts
               </button>
@@ -271,14 +269,17 @@ export default function QuizSetDetails() {
               className="qsdGhost"
               type="button"
               onClick={() => go("library")}
-              disabled={busy}
+              disabled={Boolean(busy)}
             >
               Back to Library
             </button>
           </div>
         </div>
 
-        {error && <div className="qsdError">{error}</div>}
+        {getQueryParam("intent") === "summary" && !set.summary && (
+          <p className="qsdMuted">Your material is saved. Select Generate Summary to create your notes.</p>
+        )}
+        {error && <div className="qsdError" role="alert">{error}</div>}
       </section>
 
       <section className="qsdAttempts">
@@ -344,7 +345,7 @@ export default function QuizSetDetails() {
         onClose={() => setSetupOpen(false)}
         onStart={({ count, minutes }) => {
           setSetupOpen(false);
-          window.location.hash = `#/cbt?setId=${setId}&count=${count}&mins=${minutes}`;
+          window.location.hash = `#/cbt?setId=${encodeURIComponent(setId)}&count=${count}&mins=${minutes}`;
         }}
       />
     </div>

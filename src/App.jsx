@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { resetState } from "./lib/storage";
+import { useAppState } from "./hooks/useAppState";
+import ConfirmModal from "./components/common/ConfirmModal";
 import "./App.css";
 import "./styles/ui.css";
 
-import Start from "./pages/Start";
-import Planner from "./pages/Planner";
-import Schedule from "./pages/Schedule";
-import QuizBuilder from "./pages/QuizBuilder";
-import Summaries from "./pages/Summaries";
-import QuizSets from "./pages/QuizSets";
-import QuizSetDetails from "./pages/QuizSetDetails";
-import CBTRoom from "./pages/CBTRoom";
+const Start = lazy(() => import("./pages/Start"));
+const Planner = lazy(() => import("./pages/Planner"));
+const Schedule = lazy(() => import("./pages/Schedule"));
+const QuizBuilder = lazy(() => import("./pages/QuizBuilder"));
+const Summaries = lazy(() => import("./pages/Summaries"));
+const QuizSets = lazy(() => import("./pages/QuizSets"));
+const QuizSetDetails = lazy(() => import("./pages/QuizSetDetails"));
+const CBTRoom = lazy(() => import("./pages/CBTRoom"));
 
 const PAGES = {
   home: { label: "Home", component: Start },
@@ -73,36 +75,51 @@ function normalizeHashKey(rawHash) {
   return ALIASES[lower] || lower;
 }
 
-function getHashPage() {
-  const normalized = normalizeHashKey(window.location.hash);
+function getHashPage(hash) {
+  const normalized = normalizeHashKey(hash);
   return PAGES[normalized] ? normalized : "home";
 }
 
 export default function App() {
-  const [page, setPage] = useState(() => getHashPage());
+  const [hash, setHash] = useState(() => window.location.hash);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [state, , storageError] = useAppState();
+  const page = getHashPage(hash);
+  const hasSchedule = state.schedule.length > 0;
 
   useEffect(() => {
-    const onHashChange = () => setPage(getHashPage());
+    const onHashChange = () => {
+      setHash(window.location.hash);
+      setMenuOpen(false);
+    };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [page]);
-
-  const ActivePage = useMemo(() => PAGES[page].component, [page]);
+  const ActivePage = PAGES[page].component;
 
   function go(to) {
     const next = PAGES[to] ? to : "home";
-    setPage(next);
+    setMenuOpen(false);
     window.location.hash = `#/${next}`;
+    setHash(window.location.hash);
+  }
+
+  function confirmReset() {
+    if (!resetState()) {
+      setResetError("Your data could not be reset. Please try again.");
+      return;
+    }
+    setResetError("");
+    setShowResetConfirm(false);
+    go("home");
   }
 
   return (
     <div className="app">
-      <nav className="nav">
+      <nav className="nav" aria-label="Main navigation">
         <div className="navLeft">
           <button
             className="brand"
@@ -129,6 +146,7 @@ export default function App() {
           type="button"
           aria-label="Toggle menu"
           aria-expanded={menuOpen}
+          aria-controls="main-navigation"
           onClick={() => setMenuOpen((v) => !v)}
         >
           <span className="menuDot" />
@@ -136,10 +154,20 @@ export default function App() {
           <span className="menuDot" />
         </button>
 
-        <div className={menuOpen ? "navLinks open" : "navLinks"}>
+        <div
+          id="main-navigation"
+          className={menuOpen ? "navLinks open" : "navLinks"}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setMenuOpen(false);
+              document.querySelector(".menuBtn")?.focus();
+            }
+          }}
+        >
           <button
             className={page === "home" ? "navBtn active" : "navBtn"}
             onClick={() => go("home")}
+            aria-current={page === "home" ? "page" : undefined}
             type="button"
           >
             Home
@@ -148,14 +176,27 @@ export default function App() {
           <button
             className={page === "plan" ? "navBtn active" : "navBtn"}
             onClick={() => go("plan")}
+            aria-current={page === "plan" ? "page" : undefined}
             type="button"
           >
             Study Plan
           </button>
 
+          {hasSchedule && (
+            <button
+              className={page === "schedule" ? "navBtn active" : "navBtn"}
+              onClick={() => go("schedule")}
+              aria-current={page === "schedule" ? "page" : undefined}
+              type="button"
+            >
+              View Schedule
+            </button>
+          )}
+
           <button
             className={page === "practice" ? "navBtn active" : "navBtn"}
             onClick={() => go("practice")}
+            aria-current={page === "practice" ? "page" : undefined}
             type="button"
           >
             Practice
@@ -164,6 +205,7 @@ export default function App() {
           <button
             className={page === "notes" ? "navBtn active" : "navBtn"}
             onClick={() => go("notes")}
+            aria-current={page === "notes" ? "page" : undefined}
             type="button"
           >
             Summarize Notes
@@ -172,6 +214,7 @@ export default function App() {
           <button
             className={page === "library" ? "navBtn active" : "navBtn"}
             onClick={() => go("library")}
+            aria-current={page === "library" ? "page" : undefined}
             type="button"
           >
             Library
@@ -180,9 +223,8 @@ export default function App() {
           <button
             className="navBtn danger"
             onClick={() => {
-              resetState();
-              window.location.hash = "#/home";
-              window.location.reload();
+              setResetError("");
+              setShowResetConfirm(true);
             }}
             type="button"
           >
@@ -192,8 +234,26 @@ export default function App() {
       </nav>
 
       <main className="page">
-        <ActivePage />
+        {storageError && (
+          <div className="appAlert" role="alert">{storageError}</div>
+        )}
+        <Suspense
+          fallback={<p className="pageLoading" role="status">Loading {PAGES[page].label}…</p>}
+        >
+          <ActivePage key={hash} />
+        </Suspense>
       </main>
+
+      <ConfirmModal
+        open={showResetConfirm}
+        title="Reset all data?"
+        message="This permanently removes your saved subjects, schedules, study materials, summaries, and practice results from this browser."
+        error={resetError}
+        confirmText="Reset Data"
+        danger
+        onCancel={() => setShowResetConfirm(false)}
+        onConfirm={confirmReset}
+      />
     </div>
   );
 }

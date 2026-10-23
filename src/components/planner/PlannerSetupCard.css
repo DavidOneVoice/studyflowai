@@ -232,6 +232,10 @@
   width: 100%;
 }
 
+.pscCard .react-datepicker-wrapper {
+  width: 100%;
+}
+
 .react-datepicker {
   border: 1px solid var(--border) !important;
   background: #ffffff !important;

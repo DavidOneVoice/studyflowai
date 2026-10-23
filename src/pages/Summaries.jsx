@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { loadState } from "../lib/storage";
+import { useAppState } from "../hooks/useAppState";
+import AccessibleModal from "../components/common/AccessibleModal";
 import CloseIcon from "@mui/icons-material/Close";
 import "./Summaries.css";
 
@@ -13,21 +14,10 @@ function getSetIdFromHash() {
 }
 
 export default function Summaries() {
-  const [state, setState] = useState(() => loadState());
-  const [openSetId, setOpenSetId] = useState("");
+  const [state] = useAppState();
+  const [openSetId, setOpenSetId] = useState(getSetIdFromHash);
   const [copiedId, setCopiedId] = useState("");
-
-  useEffect(() => {
-    function syncFromStorage() {
-      setState(loadState());
-      const id = getSetIdFromHash();
-      if (id) setOpenSetId(id);
-    }
-
-    syncFromStorage();
-    window.addEventListener("hashchange", syncFromStorage);
-    return () => window.removeEventListener("hashchange", syncFromStorage);
-  }, []);
+  const [copyError, setCopyError] = useState("");
 
   useEffect(() => {
     if (!copiedId) return;
@@ -40,7 +30,7 @@ export default function Summaries() {
   const summarizedSets = useMemo(() => {
     return quizSets
       .filter(
-        (s) => typeof s.summary === "string" && s.summary.trim().length > 0,
+        (s) => typeof s?.summary === "string" && s.summary.trim().length > 0,
       )
       .sort((a, b) =>
         String(b.createdAt || "").localeCompare(String(a.createdAt || "")),
@@ -50,6 +40,18 @@ export default function Summaries() {
   const openSet = useMemo(() => {
     return summarizedSets.find((s) => s.id === openSetId) || null;
   }, [summarizedSets, openSetId]);
+
+  async function copyNotes(set) {
+    setCopiedId("");
+    setCopyError("");
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(set.summary || "");
+      setCopiedId(set.id);
+    } catch {
+      setCopyError("Could not copy automatically. Open the notes, select the text, and copy it manually.");
+    }
+  }
 
   return (
     <div className="sumPage">
@@ -65,6 +67,9 @@ export default function Summaries() {
           </div>
 
           <div className="sumActions">
+            <button className="sumPrimary" type="button" onClick={() => (window.location.hash = "#/practice?intent=summary")}>
+              Create AI Notes
+            </button>
             <button
               className="sumGhost"
               type="button"
@@ -75,13 +80,14 @@ export default function Summaries() {
           </div>
         </header>
 
+        {copyError && <p className="sumCopyError" role="alert">{copyError}</p>}
         {summarizedSets.length === 0 ? (
           <div className="sumEmpty">
             <div className="sumEmptyIcon" aria-hidden="true" />
             <div>
-              <div className="sumEmptyTitle">No Summaries generated yet</div>
+              <div className="sumEmptyTitle">No summaries generated yet</div>
               <div className="sumEmptySub">
-                Open a practice set and generate a Summary from your material.
+                Choose Create AI Notes to upload or paste material, or open a saved set in your library.
               </div>
             </div>
           </div>
@@ -110,14 +116,7 @@ export default function Summaries() {
                   <button
                     className="sumGhost"
                     type="button"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(s.summary || "");
-                        setCopiedId(s.id);
-                      } catch {
-                        setCopiedId(s.id);
-                      }
-                    }}
+                    onClick={() => copyNotes(s)}
                   >
                     Copy
                   </button>
@@ -133,14 +132,10 @@ export default function Summaries() {
       </section>
 
       {openSet && (
-        <div
-          className="sumOverlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="AI notes viewer"
-          onClick={() => setOpenSetId("")}
+        <AccessibleModal
+          open={Boolean(openSet)} onClose={() => setOpenSetId("")}
+          label="AI notes viewer" overlayClassName="sumOverlay" className="sumModal"
         >
-          <div className="sumModal" onClick={(e) => e.stopPropagation()}>
             <header className="sumModalHeader">
               <div>
                 <div className="sumModalTitle">{openSet.title}</div>
@@ -151,16 +146,7 @@ export default function Summaries() {
                 <button
                   className="sumGhost"
                   type="button"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(
-                        openSet.summary || "",
-                      );
-                      setCopiedId(openSet.id);
-                    } catch {
-                      setCopiedId(openSet.id);
-                    }
-                  }}
+                  onClick={() => copyNotes(openSet)}
                 >
                   Copy
                 </button>
@@ -169,12 +155,14 @@ export default function Summaries() {
                   className="sumGhost"
                   type="button"
                   onClick={() => setOpenSetId("")}
+                  aria-label="Close AI notes"
                 >
                   <CloseIcon />
                 </button>
               </div>
             </header>
 
+            {copyError && <p className="sumCopyError" role="alert">{copyError}</p>}
             {copiedId === openSet.id && (
               <div className="sumToast">Copied ✅</div>
             )}
@@ -182,8 +170,7 @@ export default function Summaries() {
             <div className="sumModalBody">
               <div className="sumText">{openSet.summary}</div>
             </div>
-          </div>
-        </div>
+        </AccessibleModal>
       )}
     </div>
   );

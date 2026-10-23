@@ -3,13 +3,16 @@
  * Returns null if the input is missing or invalid.
  */
 export function isoToDate(iso) {
-  if (!iso) return null;
+  if (typeof iso !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
 
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return null;
 
   // Month is zero-based in JavaScript Date (0 = January).
-  return new Date(y, m - 1, d);
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d
+    ? date
+    : null;
 }
 
 /**

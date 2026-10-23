@@ -1,21 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { loadState } from "../lib/storage";
+import { useAppState } from "../hooks/useAppState";
+import { dateToIso } from "../lib/dateHelpers";
 import { fromMinutes } from "../lib/time";
 import "./Schedule.css";
 
 export default function Schedule() {
-  const [state, setState] = useState(() => loadState());
+  const [state] = useAppState();
   const [filterCourseId, setFilterCourseId] = useState("");
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    function onHashChange() {
-      setState(loadState());
-    }
-
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
+  const [copyError, setCopyError] = useState("");
 
   useEffect(() => {
     if (!copied) return;
@@ -35,15 +28,11 @@ export default function Schedule() {
     return schedule.filter((s) => validCourseIds.has(s.courseId));
   }, [schedule, validCourseIds]);
 
+  const selectedCourseId = validCourseIds.has(filterCourseId) ? filterCourseId : "";
   const filtered = useMemo(() => {
-    if (!filterCourseId) return cleanedSchedule;
-    return cleanedSchedule.filter((s) => s.courseId === filterCourseId);
-  }, [cleanedSchedule, filterCourseId]);
-
-  useEffect(() => {
-    if (!filterCourseId) return;
-    if (!validCourseIds.has(filterCourseId)) setFilterCourseId("");
-  }, [filterCourseId, validCourseIds]);
+    if (!selectedCourseId) return cleanedSchedule;
+    return cleanedSchedule.filter((s) => s.courseId === selectedCourseId);
+  }, [cleanedSchedule, selectedCourseId]);
 
   function downloadFile(filename, content, mime = "text/plain") {
     const blob = new Blob([content], { type: mime });
@@ -56,7 +45,7 @@ export default function Schedule() {
     a.click();
     a.remove();
 
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   function toScheduleTxt(sc) {
@@ -95,6 +84,7 @@ export default function Schedule() {
   }
 
   const hasSchedule = cleanedSchedule.length > 0;
+  const todayIso = dateToIso(new Date());
 
   return (
     <div className="schPage">
@@ -141,9 +131,10 @@ export default function Schedule() {
           <>
             <div className="schToolbar">
               <div className="schFilter field">
-                <label>Filter by subject</label>
+                <label htmlFor="schedule-subject-filter">Filter by subject</label>
                 <select
-                  value={filterCourseId}
+                  id="schedule-subject-filter"
+                  value={selectedCourseId}
                   onChange={(e) => setFilterCourseId(e.target.value)}
                 >
                   <option value="">All subjects</option>
@@ -164,10 +155,13 @@ export default function Schedule() {
                     onClick={async () => {
                       if (!filtered.length) return;
                       const txt = toScheduleTxt(filtered);
+                      setCopyError("");
+                      setCopied(false);
                       try {
                         await navigator.clipboard.writeText(txt);
-                      } finally {
                         setCopied(true);
+                      } catch {
+                        setCopyError("Copy failed. Check clipboard permission or use Export TXT.");
                       }
                     }}
                   >
@@ -204,7 +198,8 @@ export default function Schedule() {
                     Export CSV
                   </button>
 
-                  {copied && <span className="schCopied">Copied ✅</span>}
+                  {copied && <span className="schCopied" role="status">Copied ✅</span>}
+                  {copyError && <span className="error" role="alert">{copyError}</span>}
                 </div>
 
                 <div className="schCount">
@@ -214,21 +209,21 @@ export default function Schedule() {
             </div>
 
             <div className="schTableWrap">
-              <div className="table schTable">
-                <div className="row head schedule">
-                  <div>Date</div>
-                  <div>Time</div>
-                  <div>Subject</div>
-                  <div>Session Type</div>
+              <div className="table schTable" role="table" aria-label="Reading schedule">
+                <div className="row head schedule" role="row">
+                  <div role="columnheader">Date</div>
+                  <div role="columnheader">Time</div>
+                  <div role="columnheader">Subject</div>
+                  <div role="columnheader">Session Type</div>
                 </div>
 
                 {filtered.map((s, idx) => {
-                  const todayIso = new Date().toISOString().slice(0, 10);
                   const isToday = s.date === todayIso;
                   const isPast = s.date < todayIso;
 
                   return (
                     <div
+                      role="row"
                       className={[
                         "row",
                         "schedule",
@@ -237,13 +232,13 @@ export default function Schedule() {
                       ].join(" ")}
                       key={idx}
                     >
-                      <div>{s.date}</div>
-                      <div>
+                      <div role="cell">{s.date}</div>
+                      <div role="cell">
                         {fromMinutes(s.startMinutes)}–
                         {fromMinutes(s.endMinutes)}
                       </div>
-                      <div>{s.courseName}</div>
-                      <div>{s.type}</div>
+                      <div role="cell">{s.courseName}</div>
+                      <div role="cell">{s.type}</div>
                     </div>
                   );
                 })}

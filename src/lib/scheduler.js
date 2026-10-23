@@ -1,190 +1,86 @@
-import { toMinutes } from "./time";
+import { toMinutes } from "./time.js";
+import { dateToIso, isoToDate } from "./dateHelpers.js";
 
-/**
- * Generate study sessions between today and the latest exam date.
- *
- * Scheduling approach (v1):
- * 1) Build all available time slots (based on selected days + time window + session length).
- * 2) Compute a per-course weight:
- *      weight = workload * (1 / daysUntilExam)
- * 3) Assign each slot using a weighted rotation strategy:
- *    - each course accumulates "need" over time
- *    - the course with the highest need is chosen for the next slot
- *    - chosen course is penalized to encourage rotation across courses
- */
+const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function isoToday() {
-  const now = new Date();
-  // Local date -> YYYY-MM-DD (no timezone suffix)
-  const yyyy = now.getFullYear();
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+// Calendar dates, rather than elapsed local milliseconds, avoid DST off-by-one errors.
+export function daysBetween(aIso, bIso) {
+  const toDay = (iso) => {
+    const [year, month, day] = iso.split("-").map(Number);
+    return Date.UTC(year, month - 1, day) / 86400000;
+  };
+  return Math.max(0, toDay(bIso) - toDay(aIso));
 }
 
-/**
- * Returns number of days between two ISO dates (YYYY-MM-DD), clamped to >= 0.
- * Uses midnight timestamps to avoid time-of-day noise.
- */
-function daysBetween(aIso, bIso) {
-  const a = new Date(aIso + "T00:00:00");
-  const b = new Date(bIso + "T00:00:00");
-  const diff = b - a;
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-}
+export function generateSchedule({ courses, availability, now = new Date() }) {
+  const fail = (error) => ({ schedule: [], error });
+  if (!Array.isArray(courses) || !courses.length) return fail("Add at least one course.");
+  if (!(now instanceof Date) || !Number.isFinite(now.getTime())) return fail("The current date is invalid.");
 
-/** Converts a Date to a short day label used by the availability selector. */
-function dayLabelFromDate(d) {
-  const map = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  return map[d.getDay()];
-}
-
-/** Returns a new Date that is `n` days after the given date (does not mutate input). */
-function addDays(dateObj, n) {
-  const d = new Date(dateObj);
-  d.setDate(d.getDate() + n);
-  return d;
-}
-
-export function generateSchedule({ courses, availability }) {
-  // Validate minimal required inputs.
-  if (!courses?.length)
-    return { schedule: [], error: "Add at least one course." };
-
-  const days = availability?.days || [];
-  if (!days.length)
-    return { schedule: [], error: "Select at least one study day." };
-
-  const startTime = availability?.startTime || "18:00";
-  const endTime = availability?.endTime || "20:00";
+  const days = Array.isArray(availability?.days) ? availability.days : [];
+  if (!days.some((day) => DAY_LABELS.includes(day))) return fail("Select at least one study day.");
+  const startMinutes = toMinutes(availability?.startTime ?? "18:00");
+  const endMinutes = toMinutes(availability?.endTime ?? "20:00");
   const sessionMinutes = Number(availability?.sessionMinutes ?? 60);
-
-  const startM = toMinutes(startTime);
-  const endM = toMinutes(endTime);
-
-  // Time window validation.
-  if (endM <= startM) {
-    return { schedule: [], error: "End time must be later than start time." };
+  if (!Number.isFinite(startMinutes) || !Number.isFinite(endMinutes)) {
+    return fail("Choose valid start and end times.");
   }
-  if (sessionMinutes < 15) {
-    return {
-      schedule: [],
-      error: "Session length must be at least 15 minutes.",
-    };
+  if (endMinutes <= startMinutes) return fail("End time must be later than start time.");
+  if (!Number.isInteger(sessionMinutes) || sessionMinutes < 15) {
+    return fail("Session length must be a whole number of at least 15 minutes.");
   }
+  const slotsPerDay = Math.floor((endMinutes - startMinutes) / sessionMinutes);
+  if (slotsPerDay < 1) return fail("Time window is too small for the session length.");
 
-  // Determine how many sessions can fit into each chosen day.
-  const slotsPerDay = Math.floor((endM - startM) / sessionMinutes);
-  if (slotsPerDay < 1) {
-    return {
-      schedule: [],
-      error: "Time window is too small for the session length.",
-    };
+  if (courses.some((course) => !course?.id || !course.name || !isoToDate(course.examDate)
+    || !Number.isFinite(Number(course.workload)) || Number(course.workload) <= 0)) {
+    return fail("Check each subject's name, exam date, and workload before generating a plan.");
   }
 
-  // Schedule horizon runs from today until the latest exam date across courses.
-  const latestExam = courses.reduce(
-    (max, c) => (c.examDate > max ? c.examDate : max),
-    courses[0].examDate,
-  );
-  const todayIso = isoToday();
-  const horizonDays = daysBetween(todayIso, latestExam);
+  const today = dateToIso(now);
+  const stats = courses.filter((course) => course.examDate >= today)
+    .map((course) => ({ ...course, workload: Number(course.workload), need: 0 }));
+  if (!stats.length) return fail("Add a subject with an exam today or in the future.");
+  const latestExam = stats.reduce((latest, course) => course.examDate > latest ? course.examDate : latest, today);
+  const horizon = daysBetween(today, latestExam);
+  const firstDay = isoToDate(today);
+  const schedule = [];
 
-  if (horizonDays < 1) {
-    return {
-      schedule: [],
-      error: "Your latest exam date must be in the future.",
-    };
-  }
+  for (let offset = 0; offset <= horizon; offset += 1) {
+    const day = new Date(firstDay);
+    day.setDate(day.getDate() + offset);
+    if (!days.includes(DAY_LABELS[day.getDay()])) continue;
+    const date = dateToIso(day);
+    // No exam time is collected, so the exam date itself remains eligible.
+    const eligible = stats.filter((course) => course.examDate >= date);
+    if (!eligible.length) continue;
+    const weights = eligible.map((course) => course.workload / Math.max(1, daysBetween(date, course.examDate)));
+    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
 
-  /**
-   * Build all available slots from today through the horizon.
-   * Slots include:
-   * - date (YYYY-MM-DD)
-   * - slotIndex (1-based per day)
-   * - start/end minutes (from midnight)
-   */
-  const startDate = new Date(todayIso + "T00:00:00");
-  const slots = [];
-  for (let i = 0; i <= horizonDays; i++) {
-    const dateObj = addDays(startDate, i);
-    const dayLabel = dayLabelFromDate(dateObj);
-    if (!days.includes(dayLabel)) continue;
+    for (let slot = 0; slot < slotsPerDay; slot += 1) {
+      const start = startMinutes + slot * sessionMinutes;
+      const sessionStart = new Date(day);
+      sessionStart.setHours(Math.floor(start / 60), start % 60, 0, 0);
+      if (sessionStart.getTime() < now.getTime()) continue;
 
-    const iso =
-      dateObj.getFullYear() +
-      "-" +
-      String(dateObj.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(dateObj.getDate()).padStart(2, "0");
-
-    for (let s = 0; s < slotsPerDay; s++) {
-      const start = startM + s * sessionMinutes;
-      const end = start + sessionMinutes;
-      slots.push({
-        date: iso,
-        slotIndex: s + 1,
+      let chosen = eligible[0];
+      eligible.forEach((course, index) => {
+        course.need += weights[index] / totalWeight;
+        if (course.need > chosen.need) chosen = course;
+      });
+      chosen.need -= 1;
+      const remainingDays = daysBetween(date, chosen.examDate);
+      schedule.push({
+        date,
         startMinutes: start,
-        endMinutes: end,
+        endMinutes: start + sessionMinutes,
+        courseId: chosen.id,
+        courseName: chosen.name,
+        type: remainingDays <= 3 ? "Final Review" : remainingDays <= 7 ? "Revision" : "Focused Study",
       });
     }
   }
-
-  /**
-   * Compute per-course stats used for weighted rotation.
-   * - daysUntilExam: at least 1 day to avoid division-by-zero
-   * - weight: higher for heavier workload and closer exam dates
-   * - need: accumulates over time to decide what gets scheduled next
-   */
-  const courseStats = courses.map((c) => {
-    const dte = Math.max(1, daysBetween(todayIso, c.examDate));
-    const weight = Number(c.workload || 5) * (1 / dte);
-    return {
-      id: c.id,
-      name: c.name,
-      examDate: c.examDate,
-      workload: Number(c.workload || 5),
-      daysUntilExam: dte,
-      weight,
-      need: weight, // initial need
-    };
-  });
-
-  // Total weight is used as the "penalty" applied to the chosen course to force rotation.
-  const totalWeight = courseStats.reduce((sum, c) => sum + c.weight, 0);
-
-  /**
-   * Fill each slot by repeatedly:
-   * 1) Adding weight to each course's need (credit accumulation)
-   * 2) Choosing the course with the highest need
-   * 3) Subtracting totalWeight from the chosen course's need (rotation penalty)
-   */
-  const schedule = slots.map((slot) => {
-    // Add "credit" each round.
-    for (const cs of courseStats) cs.need += cs.weight;
-
-    courseStats.sort((a, b) => b.need - a.need);
-    const chosen = courseStats[0];
-
-    // Subtract totalWeight to prevent the same course from dominating consecutive slots.
-    chosen.need -= totalWeight;
-
-    // Classify the session type based on proximity to the exam date.
-    const daysToExam = Math.max(1, daysBetween(slot.date, chosen.examDate));
-
-    let type = "Focused Study";
-    if (daysToExam <= 3) type = "Final Review";
-    else if (daysToExam <= 7) type = "Revision";
-
-    return {
-      date: slot.date,
-      startMinutes: slot.startMinutes,
-      endMinutes: slot.endMinutes,
-      courseId: chosen.id,
-      courseName: chosen.name,
-      type,
-    };
-  });
-
-  return { schedule, error: null };
+  return schedule.length
+    ? { schedule, error: null }
+    : fail("No future study sessions fit before your exams. Choose another study day or time.");
 }

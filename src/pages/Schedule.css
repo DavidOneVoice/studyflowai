@@ -158,7 +158,9 @@
 }
 
 .schFilter {
-  min-width: 260px;
+  flex: 1 1 260px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .schFilter label {
@@ -208,8 +210,14 @@
 
 .schTools {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 8px;
   justify-items: end;
+}
+
+.schToolRow > .error {
+  flex-basis: 100%;
 }
 
 .schToolRow {
@@ -252,7 +260,7 @@
 
 .schTable .row.schedule {
   display: grid;
-  grid-template-columns: 150px 190px minmax(280px, 1.4fr) 150px;
+  grid-template-columns: minmax(125px, 1fr) minmax(130px, 1fr) minmax(0, 1.8fr) minmax(110px, 0.9fr);
   gap: 12px;
   align-items: center;
 }
@@ -281,6 +289,7 @@
 }
 
 .schTable .row.schedule > div {
+  min-width: 0;
   padding-top: 14px;
   padding-bottom: 14px;
   color: var(--text-soft);
@@ -397,7 +406,7 @@
 
 @media (max-width: 880px) {
   .schTable .row.schedule {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       "course course"
       "date time"
@@ -415,6 +424,7 @@
   .schTable .row.schedule > div:nth-child(3) {
     grid-area: course;
     white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .schTable .row.schedule > div:nth-child(4) {
@@ -423,6 +433,9 @@
 }
 
 @media (max-width: 720px) {
+  .schFilter {
+    width: 100%;
+  }
   .schTools {
     justify-items: stretch;
     width: 100%;
@@ -443,5 +456,16 @@
 
   .schHeaderActions .schGhost {
     width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .schCard {
+    padding: 16px;
+  }
+
+  .schTable .row.schedule {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "course" "date" "time" "type";
   }
 }

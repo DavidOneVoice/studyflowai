@@ -137,3 +137,62 @@
   border: 0;
   margin: 16px 0;
 }
+
+/* Shared actions must be styled before any lazy page loads. */
+.primaryBtn,
+.ghostBtn {
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 14px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border 160ms ease;
+}
+
+.primaryBtn {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 16px 36px rgba(79, 70, 229, 0.18);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+}
+
+.ghostBtn {
+  color: var(--text);
+  background: #ffffff;
+  border-color: var(--border);
+  box-shadow: var(--shadow-soft);
+}
+
+.ghostBtn:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  background: #f8fafc;
+}
+
+.primaryBtn:disabled,
+.ghostBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.errorBox,
+.error {
+  padding: 12px 14px;
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #991b1b;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}

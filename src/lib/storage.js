@@ -1,25 +1,10 @@
-const STORAGE_KEY = "cramless_v1";
+export const STORAGE_KEY = "cramless_v1";
 
-/**
- * Expected persisted state shape:
- * {
- *   courses: [],
- *   availability: {
- *     days: string[],
- *     startTime: "HH:mm",
- *     endTime: "HH:mm",
- *     sessionMinutes: number
- *   },
- *   schedule: [],
- *   quizSets: []
- * }
- */
-
-function getDefaultState() {
+export function getDefaultState() {
   return {
     courses: [],
     availability: {
-      days: [], // e.g. ["Mon", "Tue"]
+      days: [],
       startTime: "18:00",
       endTime: "20:00",
       sessionMinutes: 60,
@@ -29,53 +14,130 @@ function getDefaultState() {
   };
 }
 
-/**
- * Loads app state from localStorage.
- * If nothing exists (or parsing fails), returns a safe default state.
- * Also merges defaults so missing keys in older saved data won't crash the app.
- */
-export function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return getDefaultState();
-    const parsed = JSON.parse(raw);
-
-    // Basic safety merge (so missing fields don’t crash)
-    const base = getDefaultState();
-    return {
-      ...base,
-      ...parsed,
-      availability: { ...base.availability, ...(parsed.availability || {}) },
-    };
-  } catch (err) {
-    console.error("loadState error:", err);
-    return getDefaultState();
+function normalizeState(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Saved data is not a valid study plan.");
   }
+  const defaults = getDefaultState();
+  for (const key of ["courses", "quizSets", "schedule"]) {
+    if (value[key] === undefined) continue;
+    if (!Array.isArray(value[key]) || value[key].some((entry) => !entry || typeof entry !== "object" || Array.isArray(entry))) {
+      throw new Error(`Saved ${key} data is malformed.`);
+    }
+  }
+  const availability = value.availability && typeof value.availability === "object"
+    ? value.availability
+    : {};
+  return {
+    ...defaults,
+    ...value,
+    courses: Array.isArray(value.courses) ? value.courses : [],
+    quizSets: Array.isArray(value.quizSets) ? value.quizSets : [],
+    schedule: Array.isArray(value.schedule) ? value.schedule : [],
+    availability: {
+      ...defaults.availability,
+      ...availability,
+      days: Array.isArray(availability.days) ? availability.days : [],
+    },
+  };
 }
 
-/**
- * Saves the provided state object into localStorage.
- * Returns true on success, false if saving fails.
- */
-export function saveState(state) {
-  try {
-    if (!state || typeof state !== "object") return false;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    return true;
-  } catch (err) {
-    console.error("saveState error:", err);
+function errorMessage(error, action) {
+  if (error?.name === "QuotaExceededError") {
+    return "Your browser storage is full. Your latest changes were not saved. Keep this page open and free some browser storage, then try again.";
+  }
+  if (action === "read") {
+    return "Your saved study data could not be read. It has not been overwritten. Check browser storage access or restore a backup before making changes.";
+  }
+  return action === "reset"
+    ? "Your saved data could not be reset. Please check browser storage access and try again."
+    : "Your changes could not be saved. Keep this page open, check browser storage access, and try again.";
+}
+
+/** A single store shared by every page; dependencies are injectable for offline tests. */
+export function createAppStore({
+  getStorage = () => globalThis.localStorage,
+  eventTarget = globalThis.window,
+} = {}) {
+  let snapshot;
+  const listeners = new Set();
+
+  function readState() {
+    const raw = getStorage().getItem(STORAGE_KEY);
+    return raw === null ? getDefaultState() : normalizeState(JSON.parse(raw));
+  }
+
+  function getSnapshot() {
+    if (!snapshot) {
+      try {
+        snapshot = { state: readState(), error: "" };
+      } catch (error) {
+        snapshot = { state: getDefaultState(), error: errorMessage(error, "read") };
+      }
+    }
+    return snapshot;
+  }
+
+  function publish(state, error = "") {
+    snapshot = { state, error };
+    for (const listener of listeners) listener();
+  }
+
+  function fail(error, action) {
+    publish(getSnapshot().state, errorMessage(error, action));
     return false;
   }
+
+  function updateState(updater) {
+    let latest;
+    try {
+      // Read at commit time to preserve other pages' and tabs' saved changes.
+      latest = readState();
+    } catch (error) {
+      return fail(error, "read");
+    }
+    try {
+      const next = normalizeState(typeof updater === "function" ? updater(latest) : updater);
+      getStorage().setItem(STORAGE_KEY, JSON.stringify(next));
+      publish(next);
+      return true;
+    } catch (error) {
+      return fail(error, "save");
+    }
+  }
+
+  function resetState() {
+    try {
+      getStorage().removeItem(STORAGE_KEY);
+      publish(getDefaultState());
+      return true;
+    } catch (error) {
+      return fail(error, "reset");
+    }
+  }
+
+  function onStorage(event) {
+    if (event.key !== STORAGE_KEY && event.key !== null) return;
+    try {
+      publish(readState());
+    } catch (error) {
+      fail(error, "read");
+    }
+  }
+
+  function subscribe(listener) {
+    if (listeners.size === 0) eventTarget?.addEventListener("storage", onStorage);
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) eventTarget?.removeEventListener("storage", onStorage);
+    };
+  }
+
+  return { getSnapshot, subscribe, updateState, resetState };
 }
 
-/**
- * Clears the persisted app state from localStorage.
- * Useful for logout flows or "factory reset" behavior.
- */
-export function resetState() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (err) {
-    console.error("resetState error:", err);
-  }
-}
+export const appStore = createAppStore();
+export const loadState = () => appStore.getSnapshot().state;
+export const saveState = appStore.updateState;
+export const resetState = appStore.resetState;

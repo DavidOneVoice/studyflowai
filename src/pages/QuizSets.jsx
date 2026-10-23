@@ -1,25 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { loadState, saveState } from "../lib/storage";
+import { useMemo, useState } from "react";
+import { useAppState } from "../hooks/useAppState";
 import QuizSetsTable from "../components/quiz/QuizSetsTable";
 import ConfirmModal from "../components/common/ConfirmModal";
 import "./QuizSets.css";
 
 export default function QuizSets() {
-  const [state, setState] = useState(() => loadState());
+  const [state, setState] = useAppState();
   const [confirmRemoveId, setConfirmRemoveId] = useState(null);
-
-  useEffect(() => {
-    function onHashChange() {
-      setState(loadState());
-    }
-
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
-
-  useEffect(() => {
-    saveState(state);
-  }, [state]);
 
   const quizSets = useMemo(() => state.quizSets || [], [state.quizSets]);
 
@@ -34,12 +21,12 @@ export default function QuizSets() {
   function handleRemoveConfirmed() {
     if (!confirmRemoveId) return;
 
-    setState((prev) => ({
+    const saved = setState((prev) => ({
       ...prev,
       quizSets: (prev.quizSets || []).filter((s) => s.id !== confirmRemoveId),
     }));
 
-    setConfirmRemoveId(null);
+    if (saved) setConfirmRemoveId(null);
   }
 
   return (
