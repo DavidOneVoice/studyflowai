@@ -1,160 +1,127 @@
-const PAGE = {
-  width: 595.28,
-  height: 841.89,
-  marginX: 42,
-  marginY: 52,
-  lineHeight: 15,
-};
+const PAGE = { width: 595.28, height: 841.89, marginX: 42, marginY: 48 };
+const FONT_URLS = [
+  new URL("../assets/fonts/NotoSans-Regular.ttf", import.meta.url),
+  new URL("../assets/fonts/NotoSansMath-Regular.ttf", import.meta.url),
+];
+let cachedFonts;
 
-function sanitizeText(value) {
-  return String(value || "")
-    .normalize("NFKD")
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201C\u201D]/g, '"')
-    .replace(/[\u2013\u2014]/g, "-")
-    .replace(/\u2026/g, "...")
-    .replace(/\u00A0/g, " ")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\x20-\x7E\n]/g, "");
+async function loadFontBytes() {
+  cachedFonts ||= Promise.all(FONT_URLS.map(async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("The PDF fonts could not be loaded. Please try again when connected.");
+    return response.arrayBuffer();
+  })).catch((error) => { cachedFonts = undefined; throw error; });
+  return cachedFonts;
 }
 
-function escapePdfText(s) {
-  return s.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+function cleanText(value) {
+  return Array.from(String(value ?? "").normalize("NFC").replace(/\r\n?/g, "\n").replace(/\t/g, "    "))
+    .filter((character) => character === "\n" || (character.codePointAt(0) >= 32 && character.codePointAt(0) !== 127))
+    .join("");
 }
 
-function wrapLine(text, maxChars = 92) {
-  const words = sanitizeText(text).split(/\s+/).filter(Boolean);
+export function questionPdfSections({ title, questions }) {
+  const sections = [
+    { text: cleanText(title || "Practice Questions"), size: 18, gap: 8 },
+    { text: `Total Questions: ${questions.length}`, size: 11, gap: 14 },
+  ];
+  questions.forEach((question, index) => {
+    sections.push({ text: cleanText(`${index + 1}. ${question.prompt || ""}`), size: 12, gap: 5 });
+    (question.options || []).forEach((option, optionIndex) => sections.push({ text: cleanText(`${String.fromCharCode(65 + optionIndex)}) ${option}`), size: 11, indent: 18, gap: 3 }));
+    if (question.answer) sections.push({ text: cleanText(`Answer: ${question.answer}`), size: 10, indent: 18, gap: 4 });
+    if (question.explanation) sections.push({ text: cleanText(`Explanation: ${question.explanation}`), size: 10, indent: 18, gap: 4 });
+    sections.push({ text: "", size: 10, gap: 9 });
+  });
+  return sections;
+}
+
+function makeTextMetrics(fonts) {
+  const characterSets = fonts.map((font) => new Set(font.getCharacterSet()));
+  function runs(text) {
+    const result = [];
+    for (const character of text) {
+      const fontIndex = characterSets.findIndex((set) => set.has(character.codePointAt(0)));
+      if (fontIndex === -1) {
+        const code = character.codePointAt(0).toString(16).toUpperCase();
+        throw new Error(`PDF export cannot display ${character} (U+${code}) with its current fonts. No text has been removed. Use your browser's Print to PDF option for this content.`);
+      }
+      if (result.at(-1)?.font === fonts[fontIndex]) result.at(-1).text += character;
+      else result.push({ text: character, font: fonts[fontIndex] });
+    }
+    return result;
+  }
+  const widths = new Map();
+  return {
+    runs,
+    width(text, size) {
+      const key = `${size}:${text}`;
+      if (!widths.has(key)) widths.set(key, runs(text).reduce((total, run) => total + run.font.widthOfTextAtSize(run.text, size), 0));
+      return widths.get(key);
+    },
+  };
+}
+
+function wrapText(text, maxWidth, size, metrics) {
   const lines = [];
-  let current = "";
-
-  words.forEach((word) => {
-    if (!current) {
-      current = word;
-      return;
+  for (const paragraph of text.split("\n")) {
+    let line = "";
+    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (metrics.width(candidate, size) <= maxWidth) { line = candidate; continue; }
+      if (line) { lines.push(line); line = ""; }
+      // Long words and formulas must wrap as well; keep every Unicode character.
+      for (const character of word) {
+        if (line && metrics.width(line + character, size) > maxWidth) { lines.push(line); line = ""; }
+        line += character;
+      }
     }
-
-    if ((current + " " + word).length <= maxChars) {
-      current += ` ${word}`;
-    } else {
-      lines.push(current);
-      current = word;
-    }
-  });
-
-  if (current) lines.push(current);
-  return lines.length ? lines : [""];
+    lines.push(line);
+  }
+  return lines;
 }
 
-function toPdfBytes(content) {
-  return new TextEncoder().encode(content);
-}
-
-function makePdf({ title, questions }) {
-  const pageStreams = [];
-  let lines = [];
+export async function createQuestionsPdf({ title, questions = [], fontBytes }) {
+  const [{ PDFDocument }, fontkitModule, bytes] = await Promise.all([
+    import("pdf-lib"), import("@pdf-lib/fontkit"), fontBytes ? Promise.resolve(fontBytes) : loadFontBytes(),
+  ]);
+  const document = await PDFDocument.create();
+  document.registerFontkit(fontkitModule.default || fontkitModule);
+  const fonts = await Promise.all(bytes.map((data) => document.embedFont(data, { subset: true })));
+  const metrics = makeTextMetrics(fonts);
+  const sections = questionPdfSections({ title, questions });
+  // Check all glyphs before creating a download, rather than silently replacing text.
+  sections.forEach((section) => metrics.runs(section.text.replace(/\n/g, "")));
+  document.setTitle(cleanText(title || "Practice Questions"));
+  document.setCreator("StudyFlo AI");
+  let page = document.addPage([PAGE.width, PAGE.height]);
   let y = PAGE.height - PAGE.marginY;
-
-  function pushLine(text, { size = 12, bold = false, indent = 0 } = {}) {
-    if (y <= PAGE.marginY) {
-      pageStreams.push(lines.join("\n"));
-      lines = [];
-      y = PAGE.height - PAGE.marginY;
+  for (const section of sections) {
+    const { size, indent = 0, gap = 0 } = section;
+    const lineHeight = size * 1.45;
+    const lines = wrapText(section.text, PAGE.width - 2 * PAGE.marginX - indent, size, metrics);
+    for (const line of lines) {
+      if (y - lineHeight < PAGE.marginY) { page = document.addPage([PAGE.width, PAGE.height]); y = PAGE.height - PAGE.marginY; }
+      let x = PAGE.marginX + indent;
+      for (const run of metrics.runs(line)) {
+        page.drawText(run.text, { x, y, size, font: run.font });
+        x += run.font.widthOfTextAtSize(run.text, size);
+      }
+      y -= lineHeight;
     }
-
-    const font = bold ? "F2" : "F1";
-    lines.push(`BT /${font} ${size} Tf 1 0 0 1 ${PAGE.marginX + indent} ${y.toFixed(2)} Tm (${escapePdfText(text)}) Tj ET`);
-    y -= PAGE.lineHeight;
+    y -= gap;
   }
-
-  pushLine(sanitizeText(title || "Practice Questions"), { size: 17, bold: true });
-  y -= 4;
-  pushLine(`Total Questions: ${questions.length}`, { size: 11 });
-  y -= 6;
-
-  questions.forEach((q, idx) => {
-    wrapLine(`${idx + 1}. ${q?.prompt || ""}`, 90).forEach((line, i) => {
-      pushLine(line, { size: 12, bold: i === 0 });
-    });
-
-    (q?.options || []).forEach((opt, i) => {
-      wrapLine(`${String.fromCharCode(65 + i)}) ${opt}`, 86).forEach((line) => {
-        pushLine(line, { size: 11, indent: 18 });
-      });
-    });
-
-    if (q?.answer) {
-      pushLine(`Answer: ${sanitizeText(q.answer)}`, {
-        size: 10,
-        bold: true,
-        indent: 18,
-      });
-    }
-
-    y -= 8;
-  });
-
-  if (lines.length) pageStreams.push(lines.join("\n"));
-
-  const objects = [];
-  const pages = [];
-
-  const fontRegularId = 3;
-  const fontBoldId = 4;
-
-  pageStreams.forEach((stream, index) => {
-    const contentId = 5 + index * 2;
-    const pageId = contentId + 1;
-
-    objects[contentId] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
-    objects[pageId] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE.width} ${PAGE.height}] /Resources << /Font << /F1 ${fontRegularId} 0 R /F2 ${fontBoldId} 0 R >> >> /Contents ${contentId} 0 R >>`;
-    pages.push(`${pageId} 0 R`);
-  });
-
-  objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
-  objects[2] = `<< /Type /Pages /Kids [${pages.join(" ")}] /Count ${pages.length} >>`;
-  objects[fontRegularId] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>";
-  objects[fontBoldId] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>";
-
-  let pdf = "%PDF-1.4\n";
-  const xref = [0];
-
-  for (let i = 1; i < objects.length; i += 1) {
-    if (!objects[i]) continue;
-    xref[i] = pdf.length;
-    pdf += `${i} 0 obj\n${objects[i]}\nendobj\n`;
-  }
-
-  const xrefStart = pdf.length;
-  const maxId = objects.length - 1;
-  pdf += `xref\n0 ${maxId + 1}\n`;
-  pdf += "0000000000 65535 f \n";
-
-  for (let i = 1; i <= maxId; i += 1) {
-    const offset = xref[i] || 0;
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  }
-
-  pdf += `trailer\n<< /Size ${maxId + 1} /Root 1 0 R >>\nstartxref\n${xrefStart}\n%%EOF`;
-  return toPdfBytes(pdf);
+  return document.save();
 }
 
-export function exportQuestionsAsPdf({ title, questions = [] }) {
-  const bytes = makePdf({ title, questions });
-  const blob = new Blob([bytes], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-
-  const fileName = sanitizeText(title || "practice-questions")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 50);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${fileName || "practice-questions"}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
+export async function exportQuestionsAsPdf({ title, questions = [] }) {
+  const bytes = await createQuestionsPdf({ title, questions });
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  const fileName = cleanText(title || "practice-questions").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${fileName || "practice-questions"}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }

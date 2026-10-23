@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { getQuizMinutes } from "../../utils/quizTime";
 import "./QuizControls.css";
 
@@ -9,13 +10,15 @@ export default function QuizControls({
   customMinutes,
   setCustomMinutes,
 }) {
+  const id = useId();
   return (
     <div className="qcWrapper">
       <div className="qcCard">
         <div className="qcSection">
-          <label className="qcLabel">Questions</label>
+          <label className="qcLabel" htmlFor={`${id}-count`}>Questions</label>
 
           <select
+            id={`${id}-count`}
             className="qcSelect"
             value={questionCount}
             onChange={(e) => setQuestionCount(Number(e.target.value))}
@@ -29,7 +32,7 @@ export default function QuizControls({
         </div>
 
         <div className="qcSection">
-          <label className="qcLabel">Timer</label>
+          <div className="qcLabel">Timer</div>
 
           <div className="qcTimerBlock">
             <label className="qcToggle">
@@ -49,6 +52,7 @@ export default function QuizControls({
                 <input
                   className="qcNumber"
                   type="number"
+                  aria-label="Custom timer duration in minutes"
                   min="1"
                   value={customMinutes}
                   onChange={(e) => setCustomMinutes(e.target.value)}

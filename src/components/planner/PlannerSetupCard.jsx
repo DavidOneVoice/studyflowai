@@ -1,3 +1,4 @@
+import { useId } from "react";
 import DatePicker from "react-datepicker";
 import {
   dateToHHmm,
@@ -19,6 +20,7 @@ export default function PlannerSetupCard({
   setAvailability,
   errors = [],
 }) {
+  const id = useId();
   return (
     <div className="pscCard card">
       <header className="pscHeader">
@@ -32,8 +34,9 @@ export default function PlannerSetupCard({
 
       <form onSubmit={onAddCourse} className="pscFormGrid">
         <div className="field">
-          <label>Subject name</label>
+          <label htmlFor={`${id}-subject`}>Subject name</label>
           <input
+            id={`${id}-subject`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., CSC 101 - Intro to Computing"
@@ -42,8 +45,9 @@ export default function PlannerSetupCard({
         </div>
 
         <div className="field">
-          <label>Exam date</label>
+          <label htmlFor={`${id}-exam-date`}>Exam date</label>
           <DatePicker
+            id={`${id}-exam-date`}
             selected={isoToDate(examDate)}
             onChange={(d) => setExamDate(dateToIso(d))}
             placeholderText="Select exam date"
@@ -58,13 +62,14 @@ export default function PlannerSetupCard({
         </div>
 
         <div className="field">
-          <label>Priority level (1–10)</label>
+          <label htmlFor={`${id}-priority`}>Priority level (1–10)</label>
           <select
+            id={`${id}-priority`}
             value={workload}
             onChange={(e) => setWorkload(Number(e.target.value))}
           >
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-              <option id="priority-option" key={n} value={n}>
+              <option key={n} value={n}>
                 {n}
               </option>
             ))}
@@ -90,7 +95,7 @@ export default function PlannerSetupCard({
       </header>
 
       <div className="pscAvailability">
-        <div className="pscDays">
+        <div className="pscDays" role="group" aria-label="Available study days">
           {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => {
             const selected = (availability?.days || []).includes(d);
 
@@ -99,13 +104,16 @@ export default function PlannerSetupCard({
                 key={d}
                 type="button"
                 className={selected ? "pscChip active" : "pscChip"}
+                aria-pressed={selected}
                 onClick={() => {
-                  const currentDays = availability?.days || [];
-                  const nextDays = selected
-                    ? currentDays.filter((x) => x !== d)
-                    : [...currentDays, d];
-
-                  setAvailability({ ...(availability || {}), days: nextDays });
+                  setAvailability((previousAvailability) => {
+                    const currentDays = previousAvailability?.days || [];
+                    return {
+                      days: currentDays.includes(d)
+                        ? currentDays.filter((day) => day !== d)
+                        : [...currentDays, d],
+                    };
+                  });
                 }}
               >
                 {d}
@@ -116,12 +124,12 @@ export default function PlannerSetupCard({
 
         <div className="pscTimeGrid">
           <div className="field">
-            <label>Start time</label>
+            <label htmlFor={`${id}-start-time`}>Start time</label>
             <DatePicker
+              id={`${id}-start-time`}
               selected={hhmmToDate(availability?.startTime || "18:00")}
               onChange={(d) =>
                 setAvailability({
-                  ...(availability || {}),
                   startTime: dateToHHmm(d),
                 })
               }
@@ -136,12 +144,12 @@ export default function PlannerSetupCard({
           </div>
 
           <div className="field">
-            <label>End time</label>
+            <label htmlFor={`${id}-end-time`}>End time</label>
             <DatePicker
+              id={`${id}-end-time`}
               selected={hhmmToDate(availability?.endTime || "20:00")}
               onChange={(d) =>
                 setAvailability({
-                  ...(availability || {}),
                   endTime: dateToHHmm(d),
                 })
               }
@@ -156,15 +164,15 @@ export default function PlannerSetupCard({
           </div>
 
           <div className="field">
-            <label>Session length (mins)</label>
+            <label htmlFor={`${id}-session-length`}>Session length (mins)</label>
             <input
+              id={`${id}-session-length`}
               type="number"
               min="15"
               max="240"
               value={availability?.sessionMinutes ?? 60}
               onChange={(e) =>
                 setAvailability({
-                  ...(availability || {}),
                   sessionMinutes: Number(e.target.value),
                 })
               }
@@ -181,7 +189,7 @@ export default function PlannerSetupCard({
       </div>
 
       {errors.length > 0 && (
-        <div className="errorBox pscError">
+        <div className="errorBox pscError" role="alert">
           <strong>Please fix:</strong>
           <ul>
             {errors.map((er) => (

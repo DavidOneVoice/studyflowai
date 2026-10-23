@@ -9,7 +9,6 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   animation: qsmFade 180ms ease both;
-  margin-top: 15rem;
 }
 
 @keyframes qsmFade {
@@ -41,7 +40,6 @@
   box-shadow: 0 30px 90px rgba(15, 23, 42, 0.14);
   transform-origin: center;
   animation: qsmPop 220ms ease both;
-  margin-top: 3rem;
 }
 
 @keyframes qsmPop {
@@ -65,10 +63,19 @@
 }
 
 .qsmTitle {
+  margin: 0;
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.5px;
   color: var(--text);
+}
+
+.qsmHeaderLeft {
+  min-width: 0;
+}
+
+.qsmSetTitle strong {
+  overflow-wrap: anywhere;
 }
 
 .qsmSetTitle {
@@ -93,6 +100,7 @@
 }
 
 .qsmClose {
+  flex-shrink: 0;
   border-radius: 14px;
   min-width: 44px;
   min-height: 44px;
@@ -355,6 +363,12 @@
   box-shadow: var(--focus);
 }
 
+.qsmBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .qsmPrimary {
   border: 0;
   color: #ffffff;
@@ -376,7 +390,6 @@
 @media (max-width: 650px) {
   .qsmOverlay {
     padding: 12px;
-    margin-top: 9rem;
   }
 
   .qsmActions .qsmBtn {

@@ -524,3 +524,15 @@
     width: 100%;
   }
 }
+
+.pmSaveError {
+  padding: 14px;
+  border: 1px solid rgba(185, 28, 28, 0.25);
+  border-radius: 16px;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.pmSaveError p {
+  margin: 0 0 12px;
+}

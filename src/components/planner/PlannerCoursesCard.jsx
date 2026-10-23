@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import ConfirmModal from "../common/ConfirmModal";
+import { dateToIso } from "../../lib/dateHelpers";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import "./PlannerCoursesCard.css";
 
@@ -20,7 +21,7 @@ export default function PlannerCoursesCard({
   const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const todayIso = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayIso = dateToIso(new Date());
 
   const expiredIds = useMemo(() => {
     return new Set(
@@ -144,8 +145,9 @@ export default function PlannerCoursesCard({
 
                   <div className="right">
                     <button
-                      className="qstRemove"
+                      className="pccRemove"
                       type="button"
+                      aria-label={`Remove ${c.name}`}
                       onClick={() => onRemoveCourse(c.id)}
                     >
                       <DeleteForeverIcon />
@@ -184,7 +186,7 @@ export default function PlannerCoursesCard({
       )}
 
       {(quizError || scheduleError) && (
-        <div className="pccErrors">
+        <div className="pccErrors" role="alert">
           {quizError && <div className="errorBox">{quizError}</div>}
           {scheduleError && <div className="errorBox">{scheduleError}</div>}
         </div>
@@ -204,7 +206,7 @@ export default function PlannerCoursesCard({
         danger
         onCancel={() => setShowClearConfirm(false)}
         onConfirm={() => {
-          onClearSchedule?.();
+          if (onClearSchedule?.() === false) return;
           setShowClearConfirm(false);
         }}
       />
@@ -218,7 +220,8 @@ export default function PlannerCoursesCard({
         danger
         onCancel={() => setShowCleanupConfirm(false)}
         onConfirm={() => {
-          const removed = onRemoveExpiredCourses?.() || 0;
+          const removed = onRemoveExpiredCourses?.();
+          if (removed === false) return;
 
           if (removed > 0) {
             setToast(
@@ -230,7 +233,7 @@ export default function PlannerCoursesCard({
         }}
       />
 
-      {toast && <div className="pccToast">{toast}</div>}
+      {toast && <div className="pccToast" role="status">{toast}</div>}
     </div>
   );
 }

@@ -37,7 +37,7 @@ export default function Start() {
             </button>
             <button
               className="primaryBtn"
-              onClick={() => (window.location.hash = "#/summary")}
+              onClick={() => (window.location.hash = "#/practice?intent=summary")}
             >
               Generate Summary
             </button>

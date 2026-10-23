@@ -95,7 +95,8 @@
 }
 
 .cbtHudLeft {
-  min-width: 240px;
+  min-width: 0;
+  flex: 1 1 240px;
 }
 
 .cbtBadge {
@@ -112,6 +113,7 @@
 }
 
 .cbtSetTitle {
+  overflow-wrap: anywhere;
   margin-top: 10px;
   font-weight: 800;
   letter-spacing: -0.3px;
@@ -173,7 +175,8 @@
   }
 
   .cbtBack {
-    margin-left: 6rem;
+    margin-left: 0;
+    width: 100%;
   }
 }
 .practiceFancyStatus {

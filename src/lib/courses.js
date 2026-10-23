@@ -1,3 +1,5 @@
+import { isoToDate } from "./dateHelpers.js";
+
 /**
  * Validates a course object before creation.
  *
@@ -15,12 +17,12 @@ export function validateCourse(course) {
     errors.push("Course name is required (min 2 characters).");
   }
 
-  if (!course.examDate) {
-    errors.push("Exam date is required.");
+  if (!isoToDate(course.examDate)) {
+    errors.push("A valid exam date is required.");
   }
 
   const workload = Number(course.workload);
-  if (Number.isNaN(workload) || workload < 1 || workload > 10) {
+  if (!Number.isFinite(workload) || workload < 1 || workload > 10) {
     errors.push("Workload must be a number between 1 and 10.");
   }
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import "./QuizBuilderForm.css";
 
 export default function QuizBuilderForm({
@@ -13,14 +13,19 @@ export default function QuizBuilderForm({
   courses = [],
   selectedCourseId = "",
   setSelectedCourseId = () => {},
+  isReading = false,
+  intent = "practice",
 }) {
   const [isDragging, setIsDragging] = useState(false);
+  const id = useId();
+  const fileInputRef = useRef(null);
+  const isSummary = intent === "summary";
 
   return (
     <section className="qbCard">
       <header className="qbHeader">
         <div className="qbHeaderTop">
-          <div className="qbBadge">Practice</div>
+          <div className="qbBadge">{isSummary ? "Summary" : "Practice"}</div>
           <div className="qbBadges">
             <span className="qbChip">PDF</span>
             <span className="qbChip">DOCX</span>
@@ -28,18 +33,26 @@ export default function QuizBuilderForm({
           </div>
         </div>
 
-        <h2 className="qbTitle">Turn your notes into practice questions.</h2>
+        <h2 className="qbTitle">
+          {isSummary
+            ? "Turn your notes into a study summary."
+            : "Turn your notes into practice questions."}
+        </h2>
         <p className="qbSub">
-          Upload your material, save it, and generate practice questions with
-          StudyFlow AI whenever you’re ready to test yourself.
+          {isSummary
+            ? "Upload or paste your material, save it, and continue to create your AI summary."
+            : "Upload your material, save it, and generate practice questions with StudyFlow AI whenever you’re ready to test yourself."}
         </p>
       </header>
 
       <div className="qbBody">
         <div className="qbGrid">
           <div className="qbField">
-            <label className="qbLabel">Practice set title</label>
+            <label className="qbLabel" htmlFor={`${id}-title`}>
+              {isSummary ? "Material title" : "Practice set title"}
+            </label>
             <input
+              id={`${id}-title`}
               className="qbInput"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -49,8 +62,9 @@ export default function QuizBuilderForm({
 
           {courses.length > 0 && (
             <div className="qbField">
-              <label className="qbLabel">Link to subject (optional)</label>
+              <label className="qbLabel" htmlFor={`${id}-subject`}>Link to subject (optional)</label>
               <select
+                id={`${id}-subject`}
                 className="qbSelect"
                 value={selectedCourseId}
                 onChange={(e) => setSelectedCourseId(e.target.value)}
@@ -71,7 +85,7 @@ export default function QuizBuilderForm({
         </div>
 
         <div className="qbField">
-          <label className="qbLabel">Upload material</label>
+          <label className="qbLabel" htmlFor={`${id}-file`}>Upload material</label>
 
           <div
             className={`qbUpload ${isDragging ? "dragging" : ""}`}
@@ -87,10 +101,16 @@ export default function QuizBuilderForm({
             }}
           >
             <input
+              ref={fileInputRef}
+              id={`${id}-file`}
               className="qbFile"
               type="file"
               accept=".pdf,.docx,.txt"
-              onChange={onFileUpload}
+              onChange={(event) => {
+                const files = Array.from(event.target.files || []);
+                onFileUpload?.({ target: { files } });
+                event.target.value = "";
+              }}
             />
 
             <div className="qbUploadIcon" aria-hidden="true" />
@@ -103,17 +123,33 @@ export default function QuizBuilderForm({
             </div>
           </div>
 
-          {fileInfo && (
+          {(fileInfo || isReading) && (
             <div className="qbFileInfo">
-              <span className="qbFileTag">Selected</span>
+              <span className="qbFileTag">{isReading ? "Reading…" : "Selected"}</span>
               <strong className="qbFileName">{fileInfo}</strong>
+              <button
+                type="button"
+                className="qbClearFile"
+                onClick={() => {
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                  onFileUpload?.({ target: { files: [] } });
+                }}
+              >
+                Clear file
+              </button>
             </div>
+          )}
+          {isReading && (
+            <p className="qbHelp" role="status">
+              Reading your document… You can choose another file or paste material to replace it.
+            </p>
           )}
         </div>
 
         <div className="qbField">
-          <label className="qbLabel">Or paste material</label>
+          <label className="qbLabel" htmlFor={`${id}-source`}>Or paste material</label>
           <textarea
+            id={`${id}-source`}
             className="qbTextarea"
             value={sourceText}
             onChange={(e) => setSourceText(e.target.value)}
@@ -121,15 +157,19 @@ export default function QuizBuilderForm({
             rows={10}
           />
           <div className="qbCounter">
-            {Math.min(sourceText?.length || 0, 999999).toLocaleString()} chars
+            {(sourceText?.length || 0).toLocaleString()} chars
           </div>
         </div>
 
-        {error && <div className="qbError">{error}</div>}
+        {error && <div className="qbError" role="alert">{error}</div>}
 
         <div className="qbActions">
-          <button className="qbPrimary" type="button" onClick={onSave}>
-            Save Practice Set
+          <button className="qbPrimary" type="button" onClick={onSave} disabled={isReading}>
+            {isReading
+              ? "Reading document…"
+              : isSummary
+                ? "Save & Continue to Summary"
+                : "Save Practice Set"}
           </button>
         </div>
       </div>

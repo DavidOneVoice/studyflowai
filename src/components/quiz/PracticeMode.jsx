@@ -1,5 +1,50 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import "./PracticeMode.css";
+
+function AttemptSaveStatus({ onFinishAttempt }) {
+  const attemptedRef = useRef(false);
+  const savedRef = useRef(false);
+  const [saveFailed, setSaveFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Defer the write so Strict Mode's cancelled setup cannot save twice.
+    queueMicrotask(() => {
+      if (cancelled || attemptedRef.current) return;
+      attemptedRef.current = true;
+      try {
+        savedRef.current = onFinishAttempt?.() !== false;
+      } catch {
+        savedRef.current = false;
+      }
+      setSaveFailed(!savedRef.current);
+    });
+    return () => { cancelled = true; };
+  }, [onFinishAttempt]);
+
+  if (!saveFailed) return null;
+
+  return (
+    <div className="pmSaveError" role="alert">
+      <p>Your result could not be saved. Keep this page open and try again.</p>
+      <button
+        className="pmGhost"
+        type="button"
+        onClick={() => {
+          if (savedRef.current) return;
+          try {
+            savedRef.current = onFinishAttempt?.() !== false;
+          } catch {
+            savedRef.current = false;
+          }
+          setSaveFailed(!savedRef.current);
+        }}
+      >
+        Retry saving result
+      </button>
+    </div>
+  );
+}
 
 export default function PracticeMode({
   generating = false,
@@ -19,30 +64,9 @@ export default function PracticeMode({
   onRetake,
   secondsLeft,
   onFinishAttempt,
+  sessionId,
 }) {
-  const savedAttemptRef = useRef(false);
-  const lastAttemptKeyRef = useRef("");
-
-  useEffect(() => {
-    const key = `${activeSetId || ""}:${(activeSet?.questions || []).length}:${String(
-      activeSet?.questions?.[0]?.id || "",
-    )}`;
-
-    if (key && key !== lastAttemptKeyRef.current) {
-      lastAttemptKeyRef.current = key;
-      savedAttemptRef.current = false;
-    }
-  }, [activeSetId, activeSet]);
-
-  useEffect(() => {
-    if (!activeSetId) return;
-    if (!activeSet) return;
-    if (!showResult) return;
-    if (savedAttemptRef.current) return;
-
-    savedAttemptRef.current = true;
-    onFinishAttempt?.();
-  }, [activeSetId, activeSet, showResult, onFinishAttempt]);
+  const id = useId();
 
   if (!activeSetId || !activeSet) return null;
 
@@ -85,7 +109,14 @@ export default function PracticeMode({
         </div>
 
         <div className="pmTopRight">
-          <div className="pmProgressWrap" aria-label="Progress">
+          <div
+            className="pmProgressWrap"
+            role="progressbar"
+            aria-label="Practice progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={showResult ? 100 : progressPct}
+          >
             <div className="pmProgressTrack">
               <div
                 className="pmProgressFill"
@@ -103,18 +134,20 @@ export default function PracticeMode({
         <div className="pmBody">
           <div className="pmQuestion">
             <div className="pmQLabel">Question</div>
-            <div className="pmPrompt">{currentQuestion.prompt}</div>
+            <div className="pmPrompt" id={`${id}-question`}>{currentQuestion.prompt}</div>
           </div>
 
-          <div className="pmOptions" role="list">
-            {currentQuestion.options.map((opt) => {
+          <div className="pmOptions" role="group" aria-labelledby={`${id}-question`}>
+            {currentQuestion.options.map((opt, index) => {
               const isSelected = chosen === opt;
 
               return (
                 <button
-                  key={opt}
+                  key={`${index}-${opt}`}
                   className={isSelected ? "pmOption selected" : "pmOption"}
                   type="button"
+                  aria-pressed={isSelected}
+                  disabled={generating}
                   onClick={() => {
                     setSelectedAnswer(opt);
                     setAttemptAnswers((prev) => ({
@@ -176,7 +209,7 @@ export default function PracticeMode({
                   }
                   type="button"
                   onClick={() => onJump?.(idx)}
-                  aria-label={`Go to question ${idx + 1}`}
+                  aria-label={`Go to question ${idx + 1}, ${answered ? "answered" : "unanswered"}`}
                   aria-current={isCurrent ? "true" : undefined}
                 >
                   {idx + 1}
@@ -187,6 +220,10 @@ export default function PracticeMode({
         </div>
       ) : (
         <div className="pmBody">
+          <AttemptSaveStatus
+            key={sessionId || `${activeSetId}:${questions[0]?.id}`}
+            onFinishAttempt={onFinishAttempt}
+          />
           <div className="pmScoreCard">
             <div className="pmScoreLeft">
               <div className="pmScoreTitle">Your Score</div>
